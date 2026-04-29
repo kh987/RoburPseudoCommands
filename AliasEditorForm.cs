@@ -398,8 +398,12 @@ namespace RoburPseudoCommands
             var restartRequired = IsRestartRequired(entries);
             AliasStore.SaveEntries(entries);
             Saved = true;
+            var cacheCleared = !restartRequired;
+            string cacheClearError;
+            if (restartRequired)
+                cacheCleared = RoburCommandCache.TryClear(out cacheClearError);
 
-            Logger.Info("alias editor saved aliases count=" + entries.Count + " path='" + AliasStore.GetConfigPath() + "' restartRequired=" + restartRequired);
+            Logger.Info("alias editor saved aliases count=" + entries.Count + " path='" + AliasStore.GetConfigPath() + "' restartRequired=" + restartRequired + " cacheCleared=" + cacheCleared);
 
             var message = restartRequired
                 ? "Сохранено. Для регистрации новых, удаленных или переименованных псевдокоманд перезапустите Robur."

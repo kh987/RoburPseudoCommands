@@ -6,13 +6,20 @@ namespace RoburPseudoCommands
 {
     public class ModulePluginHost : PluginHostInitializator
     {
+        public override void Initialize(PluginFactory factory)
+        {
+            base.Initialize(factory);
+            DynamicAliasCommandFactory.RegisterFunctions(factory);
+        }
+
         protected override Type[] GetTypes()
         {
             try
             {
                 Logger.Info("ModulePluginHost.GetTypes started");
+                var dynamicTypes = DynamicAliasCommandFactory.CreateTypes();
                 var types = new[] { typeof(Module) }
-                    .Concat(DynamicAliasCommandFactory.CreateTypes())
+                    .Concat(dynamicTypes)
                     .ToArray();
                 Logger.Info("ModulePluginHost.GetTypes completed count=" + types.Length);
                 return types;

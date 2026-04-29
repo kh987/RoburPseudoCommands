@@ -17,8 +17,9 @@
     },
     "id_pseudo_edit_aliases": {
       "cmd": "pseudo_edit_aliases",
-      "title": "Edit aliases",
-      "description": "Edit pseudo command aliases"
+      "title": "Псевдокоманды...",
+      "description": "Настройка псевдокоманд Robur",
+      "icon": "ic_robur_pseudo_commands"
     },
     "id_pseudo_show_aliases": {
       "cmd": "pseudo_show_aliases",
@@ -32,95 +33,8 @@
     }
   },
   "menubars": {
-    "rbproj": {
-      "items": [
-        {
-          "id": "pseudo_commands_menu",
-          "title": "Pseudo commands"
-        }
-      ]
-    },
-    "rbproj.pseudo_commands_menu": {
-      "items": [
-        "id_pseudo_command",
-        "id_pseudo_edit_aliases",
-        "id_pseudo_reload_aliases",
-        "id_pseudo_show_aliases",
-        "id_pseudo_show_log"
-      ]
-    },
-    "rbproj.genplan.utility_sites": {
-      "items": [
-        "-",
-        "id_pseudo_command",
-        "id_pseudo_edit_aliases",
-        "id_pseudo_reload_aliases",
-        "id_pseudo_show_aliases",
-        "id_pseudo_show_log"
-      ]
-    }
-  },
-  "ribbon": {
-    "rbproj": {
-      "items": [
-        {
-          "group": "pseudo_commands",
-          "title": "Pseudo commands"
-        }
-      ]
-    },
-    "rbproj.pseudo_commands": {
-      "items": [
-        {
-          "group": "commands",
-          "title": "Commands"
-        }
-      ]
-    },
-    "rbproj.pseudo_commands.commands": {
-      "items": [
-        {
-          "button": "id_pseudo_command",
-          "size": "large"
-        },
-        {
-          "button": "id_pseudo_edit_aliases",
-          "size": "middle"
-        },
-        {
-          "button": "id_pseudo_reload_aliases",
-          "size": "middle"
-        },
-        {
-          "button": "id_pseudo_show_aliases",
-          "size": "middle"
-        },
-        {
-          "button": "id_pseudo_show_log",
-          "size": "middle"
-        }
-      ]
-    },
-    "rbproj.sites.utility_sites": {
-      "items": [
-        "-",
-        {
-          "button": "id_pseudo_command",
-          "size": "middle"
-        },
-        {
-          "button": "id_pseudo_edit_aliases",
-          "size": "middle"
-        },
-        {
-          "button": "id_pseudo_show_aliases",
-          "size": "middle"
-        },
-        {
-          "button": "id_pseudo_show_log",
-          "size": "middle"
-        }
-      ]
-    }
+    "rbproj.service": [
+      "id_pseudo_edit_aliases"
+    ]
   }
 }

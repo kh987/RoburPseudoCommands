@@ -1,51 +1,111 @@
 # RoburPseudoCommands
 
-MVP plugin for Topomatic Robur pseudo commands.
+MVP-плагин псевдокоманд для Topomatic Robur.
 
-Flow:
+Плагин работает как упрощенный аналог `acad.pgp`: пользователь вводит короткий alias в командной строке Robur, а плагин запускает соответствующую команду или action Robur.
 
-1. Edit aliases with `pseudo_edit_aliases` or by editing `aliases.json`.
-2. Save existing alias target changes and run `pseudo_reload_aliases`, or restart Robur after adding, deleting, or renaming aliases.
-3. Run a short alias such as `L` or `PL` from the Robur command line.
-4. The plugin resolves the alias through `aliases.json` and calls the Robur command/action.
+## Основной сценарий
 
-No default hotkeys are assigned because Robur Genplan already uses common function keys.
+1. Настройте aliases через команду `pseudo_edit_aliases` или вручную в `aliases.json`.
+2. После изменения назначения существующего alias сохраните файл и выполните `pseudo_reload_aliases`.
+3. После добавления, удаления или переименования alias перезапустите Robur.
+4. Введите короткий alias, например `L` или `PL`, в командной строке Robur.
+5. Плагин найдет alias в `aliases.json` и вызовет команду/action Robur.
 
-On startup the plugin dynamically registers aliases from `aliases.json` as native Robur commands.
-Duplicate commands with a trailing Backspace control character are registered for each alias
-to tolerate the first command-line input quirk observed after Robur startup.
-Aliases may specify an optional `action` such as `core.id_pline`; when present and no args are used,
-the plugin invokes that Robur action instead of directly executing the command function. If `action`
-is empty, the plugin scans installed `.plugin` files and tries to resolve an action by the command name.
+Горячие клавиши по умолчанию не назначаются, потому что распространенные функциональные клавиши уже используются Robur.
 
-On first run, the plugin copies bundled `aliases.json` to:
+## Как это работает
+
+При запуске плагин динамически регистрирует aliases из `aliases.json` как обычные команды Robur.
+Для каждого alias также регистрируется дубль с завершающим управляющим символом Backspace. Это обходной путь для особенности первого ввода в командной строке, замеченной после старта Robur.
+
+Alias может содержать необязательный `action`, например `core.id_pline`. Если `action` указан и `args` пустой, плагин вызывает Robur action вместо прямого вызова команды. Это лучше сохраняет штатное поведение Robur, включая повтор команды через Enter/пробел.
+
+Если `action` пустой, плагин сканирует установленные `.plugin` файлы и пытается найти подходящий action по имени команды.
+
+## Файл aliases
+
+При первом запуске плагин копирует встроенный `aliases.json` в пользовательский файл:
 
 `%AppData%\Topomatic\RoburPseudoCommands\aliases.json`
 
-Edit that user file and run `pseudo_reload_aliases` to reload it.
-The editor shows whether an alias is already active or requires a Robur restart.
-This is expected: Robur command names are registered during plugin initialization.
-The editor hides `Action` and `Args` by default; enable `Расширенно` to edit those fields.
-Use the `Command...` button, or double-click the command/action cell, to choose from actions discovered in installed `.plugin` files.
-The picker fills both `command` and `action`, which is useful when several Robur actions invoke the same command.
+Редактируйте этот файл вручную или через окно `pseudo_edit_aliases`.
 
-Diagnostic log:
+Пример записи:
+
+```json
+{
+  "alias": "PL",
+  "action": "core.id_pline",
+  "command": "polyline",
+  "args": [],
+  "description": "Полилиния"
+}
+```
+
+## Редактор aliases
+
+Окно редактора открывается из меню `Сервис -> Псевдокоманды...` или командой `pseudo_edit_aliases`.
+
+Редактор показывает, активен ли alias уже сейчас или для него нужен перезапуск Robur. Это ожидаемо: имена команд регистрируются во время инициализации плагина.
+
+По умолчанию редактор показывает основные поля: псевдокоманду, команду, описание и статус. Поля `Action` и `Args` скрыты; включите режим `Расширенно`, чтобы редактировать их вручную.
+
+Кнопка `Команда...` или двойной клик по ячейке команды/action открывают выбор из actions, найденных в установленных `.plugin` файлах. Выбор заполняет сразу `command` и `action`, что полезно, если несколько actions вызывают одну и ту же команду Robur.
+
+## Диагностика
+
+Лог записывается сюда:
 
 `%AppData%\Topomatic\RoburPseudoCommands\RoburPseudoCommands.log`
 
-Run `pseudo_show_log` to show the path and latest log lines.
-On plugin initialization the log includes the plugin version, loaded DLL path, and active aliases file.
-The dynamic registration log also includes command names and Unicode code points.
-Adding a new alias name requires restarting Robur so the dynamic command type can be rebuilt.
+Команда `pseudo_show_log` показывает путь к логу и последние строки.
 
-Build with the default Robur install path:
+При инициализации в лог попадают версия плагина, путь к загруженной DLL и активный файл aliases. Лог динамической регистрации также содержит имена зарегистрированных команд и их Unicode code points.
+
+## Совместимость
+
+Версия `0.4.8` проверена пользователем в Robur 16.0:
+
+- новые псевдокоманды начинают работать после перезапуска Robur без предварительного открытия окна плагина;
+- пункт `Сервис -> Псевдокоманды...` отображается с иконкой;
+- TPM-пакет разворачивается с явной папкой `icons/`, которая нужна Robur для поиска PNG-иконок меню.
+
+Версия `0.4.1` проверена в Robur 16.0:
+
+- Автомобильные дороги
+- Генплан
+- Учебная версия
+
+Для общего TPM-пакета сборка выполнялась против более старой из проверенных поставок Robur 16.0, чтобы сохранить совместимость с редакциями, где версии `Topomatic.*` отличаются.
+
+## Сборка
+
+Сборка с путем Robur по умолчанию из проекта:
 
 ```powershell
 dotnet build
 ```
 
-Or override the Robur installation directory:
+Сборка с явным указанием каталога установки Robur:
 
 ```powershell
 dotnet build -p:RoburInstallDir="C:\Program Files\Topomatic Robur Road 16.0"
+```
+
+Сборка TPM-пакета:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\build-tpm.ps1 -RoburInstallDir "C:\Program Files\Topomatic Robur Road 16.0"
+```
+
+Скрипт создает пакет вида `dist\RoburPseudoCommands-<version>.tpm` и сохраняет структуру, которую ожидает установщик Robur:
+
+```text
+package.json
+bin/RoburPseudoCommands.dll
+bin/aliases.json
+plugins/RoburPseudoCommands.plugin
+icons/
+icons/ic_robur_pseudo_commands_*.png
 ```

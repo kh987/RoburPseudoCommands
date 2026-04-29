@@ -4,10 +4,10 @@
     <OutputType>Library</OutputType>
     <RootNamespace>RoburPseudoCommands</RootNamespace>
     <AssemblyName>RoburPseudoCommands</AssemblyName>
-    <Version>0.4.1</Version>
-    <AssemblyVersion>0.4.1.0</AssemblyVersion>
-    <FileVersion>0.4.1.0</FileVersion>
-    <InformationalVersion>0.4.1</InformationalVersion>
+    <Version>0.4.8</Version>
+    <AssemblyVersion>0.4.8.0</AssemblyVersion>
+    <FileVersion>0.4.8.0</FileVersion>
+    <InformationalVersion>0.4.8</InformationalVersion>
     <LangVersion>7.3</LangVersion>
     <RoburInstallDir Condition="'$(RoburInstallDir)' == ''">C:\Program Files\Topomatic Robur Road 16.0</RoburInstallDir>
   </PropertyGroup>
@@ -34,5 +34,6 @@
   <ItemGroup>
     <None Include="RoburPseudoCommands.plugin" CopyToOutputDirectory="Always" />
     <None Include="aliases.json" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="Icons\**\*.png" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 </Project>

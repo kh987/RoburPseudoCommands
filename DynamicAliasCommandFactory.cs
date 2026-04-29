@@ -20,7 +20,8 @@ namespace RoburPseudoCommands
                 "pseudo_reload_aliases",
                 "pseudo_edit_aliases",
                 "pseudo_show_aliases",
-                "pseudo_show_log"
+                "pseudo_show_log",
+                "pseudo_alias_bootstrap"
             },
             StringComparer.OrdinalIgnoreCase);
 
@@ -68,6 +69,41 @@ namespace RoburPseudoCommands
             }
         }
 
+        public static int RegisterFunctions(PluginFactory factory)
+        {
+            if (factory == null)
+                return 0;
+
+            try
+            {
+                var aliases = LoadSupportedAliases();
+                SetRegisteredAliases(aliases.Select(x => x.Alias));
+
+                var registeredMethods = 0;
+                foreach (var alias in aliases)
+                {
+                    if (RegisterAliasFunction(factory, alias.Alias, ToCommandName(alias.Alias), false))
+                        registeredMethods++;
+
+                    if (RegisterAliasFunction(factory, alias.Alias, ToCommandName(alias.Alias) + "\b", true))
+                        registeredMethods++;
+                }
+
+                Logger.Info(string.Format(
+                    "dynamic aliases explicitly registered aliasesCount={0}; methodsCount={1}; methodsAttempted={2}",
+                    aliases.Count,
+                    registeredMethods,
+                    aliases.Count * 2));
+                Logger.Info("dynamic aliases explicitly registered commands: " + string.Join(", ", aliases.Select(FormatAliasForLog).ToArray()));
+                return aliases.Count;
+            }
+            catch (Exception ex)
+            {
+                Logger.Error("failed to explicitly register dynamic alias functions", ex);
+                return 0;
+            }
+        }
+
         public static bool IsRegistered(string alias)
         {
             lock (SyncRoot)
@@ -104,6 +140,30 @@ namespace RoburPseudoCommands
             }
 
             return typeBuilder.CreateType();
+        }
+
+        private static List<AliasEntry> LoadSupportedAliases()
+        {
+            var store = new AliasStore();
+            store.Reload();
+            return store.Aliases.Values
+                .Where(x => IsSupportedAliasName(x.Alias))
+                .OrderBy(x => x.Alias, StringComparer.OrdinalIgnoreCase)
+                .ToList();
+        }
+
+        private static bool RegisterAliasFunction(PluginFactory factory, string alias, string commandName, bool forceExecute)
+        {
+            try
+            {
+                factory.RegisterFunction(commandName, new AliasPluginFunction(alias, forceExecute));
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Logger.Error("failed to explicitly register dynamic alias function command='" + commandName + "'", ex);
+                return false;
+            }
         }
 
         private static void DefineAliasMethod(

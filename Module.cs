@@ -20,6 +20,7 @@ namespace RoburPseudoCommands
         {
             base.Initialize(factory);
             LogLoaded();
+            AliasCommandBootstrapper.Schedule();
         }
 
         [cmd("pseudo_command")]
@@ -175,6 +176,15 @@ namespace RoburPseudoCommands
             }
 
             MessageDlg.Show(sb.ToString());
+        }
+
+        [cmd("pseudo_alias_bootstrap")]
+        public void BootstrapAliases()
+        {
+            if (!EnsureAliasesLoaded())
+                return;
+
+            Logger.Info("alias bootstrap command executed aliasesCount=" + AliasStore.Aliases.Count);
         }
 
         private static bool EnsureAliasesLoaded()
