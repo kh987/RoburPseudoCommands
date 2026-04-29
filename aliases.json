@@ -1,0 +1,24 @@
+{
+  "aliases": [
+    {
+      "alias": "L",
+      "action": "core.id_line",
+      "command": "line",
+      "args": [],
+      "description": "Example: replace 'line' with the Robur command name you need"
+    },
+    {
+      "alias": "PL",
+      "action": "core.id_pline",
+      "command": "polyline",
+      "args": [],
+      "description": "Example alias"
+    },
+    {
+      "alias": "PGA",
+      "command": "pseudo_show_aliases",
+      "args": [],
+      "description": "Show aliases from this plugin"
+    }
+  ]
+}

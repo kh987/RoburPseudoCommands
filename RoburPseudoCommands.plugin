@@ -1,0 +1,124 @@
+{
+  "assemblies": {
+    "RoburPseudoCommands": "RoburPseudoCommands.dll, RoburPseudoCommands.ModulePluginHost"
+  },
+  "actions": {
+    "id_pseudo_command": {
+      "cmd": "pseudo_command",
+      "title": "Pseudo command",
+      "description": "Run Robur command by alias"
+    },
+    "id_pseudo_reload_aliases": {
+      "cmd": "pseudo_reload_aliases",
+      "title": "Reload aliases",
+      "description": "Reload aliases.json"
+    },
+    "id_pseudo_edit_aliases": {
+      "cmd": "pseudo_edit_aliases",
+      "title": "Edit aliases",
+      "description": "Edit pseudo command aliases"
+    },
+    "id_pseudo_show_aliases": {
+      "cmd": "pseudo_show_aliases",
+      "title": "Show aliases",
+      "description": "Show loaded pseudo commands"
+    },
+    "id_pseudo_show_log": {
+      "cmd": "pseudo_show_log",
+      "title": "Show log",
+      "description": "Show pseudo command diagnostic log"
+    }
+  },
+  "menubars": {
+    "rbproj": {
+      "items": [
+        {
+          "id": "pseudo_commands_menu",
+          "title": "Pseudo commands"
+        }
+      ]
+    },
+    "rbproj.pseudo_commands_menu": {
+      "items": [
+        "id_pseudo_command",
+        "id_pseudo_edit_aliases",
+        "id_pseudo_reload_aliases",
+        "id_pseudo_show_aliases",
+        "id_pseudo_show_log"
+      ]
+    },
+    "rbproj.genplan.utility_sites": {
+      "items": [
+        "-",
+        "id_pseudo_command",
+        "id_pseudo_edit_aliases",
+        "id_pseudo_reload_aliases",
+        "id_pseudo_show_aliases",
+        "id_pseudo_show_log"
+      ]
+    }
+  },
+  "ribbon": {
+    "rbproj": {
+      "items": [
+        {
+          "group": "pseudo_commands",
+          "title": "Pseudo commands"
+        }
+      ]
+    },
+    "rbproj.pseudo_commands": {
+      "items": [
+        {
+          "group": "commands",
+          "title": "Commands"
+        }
+      ]
+    },
+    "rbproj.pseudo_commands.commands": {
+      "items": [
+        {
+          "button": "id_pseudo_command",
+          "size": "large"
+        },
+        {
+          "button": "id_pseudo_edit_aliases",
+          "size": "middle"
+        },
+        {
+          "button": "id_pseudo_reload_aliases",
+          "size": "middle"
+        },
+        {
+          "button": "id_pseudo_show_aliases",
+          "size": "middle"
+        },
+        {
+          "button": "id_pseudo_show_log",
+          "size": "middle"
+        }
+      ]
+    },
+    "rbproj.sites.utility_sites": {
+      "items": [
+        "-",
+        {
+          "button": "id_pseudo_command",
+          "size": "middle"
+        },
+        {
+          "button": "id_pseudo_edit_aliases",
+          "size": "middle"
+        },
+        {
+          "button": "id_pseudo_show_aliases",
+          "size": "middle"
+        },
+        {
+          "button": "id_pseudo_show_log",
+          "size": "middle"
+        }
+      ]
+    }
+  }
+}

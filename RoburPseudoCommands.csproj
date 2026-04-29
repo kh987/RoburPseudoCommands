@@ -1,0 +1,38 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net48</TargetFramework>
+    <OutputType>Library</OutputType>
+    <RootNamespace>RoburPseudoCommands</RootNamespace>
+    <AssemblyName>RoburPseudoCommands</AssemblyName>
+    <Version>0.3.3</Version>
+    <AssemblyVersion>0.3.3.0</AssemblyVersion>
+    <FileVersion>0.3.3.0</FileVersion>
+    <InformationalVersion>0.3.3</InformationalVersion>
+    <LangVersion>7.3</LangVersion>
+    <RoburInstallDir Condition="'$(RoburInstallDir)' == ''">C:\Program Files\Topomatic Robur Road 16.0</RoburInstallDir>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Reference Include="System.Runtime.Serialization" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Windows.Forms" />
+    <Reference Include="Topomatic.ApplicationPlatform">
+      <HintPath>$(RoburInstallDir)\Topomatic.ApplicationPlatform.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="Topomatic.Cad.View">
+      <HintPath>$(RoburInstallDir)\Topomatic.Cad.View.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="Topomatic.Controls">
+      <HintPath>$(RoburInstallDir)\Topomatic.Controls.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="RoburPseudoCommands.plugin" CopyToOutputDirectory="Always" />
+    <None Include="aliases.json" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+</Project>
