@@ -12,7 +12,7 @@ using Topomatic.Controls.Dialogs;
 
 namespace RoburPseudoCommands
 {
-    partial class Module : PluginInitializator
+    public partial class Module : PluginInitializator
     {
         private static readonly AliasStore AliasStore = new AliasStore();
 

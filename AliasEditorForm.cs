@@ -125,6 +125,7 @@ namespace RoburPseudoCommands
             _grid.RowHeadersVisible = false;
             _grid.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
             _grid.CellEndEdit += delegate { RefreshStatuses(); };
+            _grid.CellDoubleClick += GridCellDoubleClick;
             _grid.UserDeletedRow += delegate { RefreshStatuses(); };
             _grid.DataError += delegate(object sender, DataGridViewDataErrorEventArgs e) { e.ThrowException = false; };
             AddColumns();
@@ -150,6 +151,7 @@ namespace RoburPseudoCommands
             buttons.Controls.Add(CreateButton("Сохранить", SaveRows));
             buttons.Controls.Add(CreateButton("Удалить", DeleteSelectedRows));
             buttons.Controls.Add(CreateButton("Добавить", AddRow));
+            buttons.Controls.Add(CreateButton("\u041a\u043e\u043c\u0430\u043d\u0434\u0430...", SelectCommand));
             root.Controls.Add(buttons, 0, 3);
         }
 
@@ -284,6 +286,79 @@ namespace RoburPseudoCommands
             }
 
             RefreshStatuses();
+        }
+
+        private void SelectCommand()
+        {
+            _grid.EndEdit();
+            _bindingSource.EndEdit();
+
+            var row = GetCurrentEditableRow();
+            if (row == null)
+                return;
+
+            var actions = ActionResolver.GetActions();
+            if (actions.Length == 0)
+            {
+                MessageBox.Show(
+                    this,
+                    "\u041d\u0435 \u043d\u0430\u0439\u0434\u0435\u043d\u043e \u043d\u0438 \u043e\u0434\u043d\u043e\u0439 Robur action \u0432 .plugin \u0444\u0430\u0439\u043b\u0430\u0445."
+                        + Environment.NewLine
+                        + Environment.NewLine
+                        + string.Join(Environment.NewLine, ActionResolver.GetScanDirectories()),
+                    "\u0412\u044b\u0431\u043e\u0440 \u043a\u043e\u043c\u0430\u043d\u0434\u044b",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Information);
+                return;
+            }
+
+            using (var form = new CommandPickerForm(actions, GetCell(row, ColCommand)))
+            {
+                if (form.ShowDialog(this) != DialogResult.OK || form.SelectedAction == null)
+                    return;
+
+                row[ColCommand] = form.SelectedAction.Command;
+                row[ColAction] = form.SelectedAction.Action;
+
+                if (string.IsNullOrEmpty(GetCell(row, ColDescription)))
+                    row[ColDescription] = GetDefaultDescription(form.SelectedAction);
+
+                Logger.Info("alias editor selected action command='" + form.SelectedAction.Command + "' action='" + form.SelectedAction.Action + "'");
+            }
+
+            RefreshStatuses();
+        }
+
+        private DataRow GetCurrentEditableRow()
+        {
+            var view = _bindingSource.Current as DataRowView;
+            if (view != null)
+                return view.Row;
+
+            AddRow();
+            view = _bindingSource.Current as DataRowView;
+            return view == null ? null : view.Row;
+        }
+
+        private static string GetDefaultDescription(RoburActionInfo action)
+        {
+            if (!string.IsNullOrEmpty(action.Title))
+                return action.Title;
+
+            return action.Description;
+        }
+
+        private void GridCellDoubleClick(object sender, DataGridViewCellEventArgs e)
+        {
+            if (e.RowIndex < 0 || e.ColumnIndex < 0)
+                return;
+
+            var column = _grid.Columns[e.ColumnIndex];
+            if (column == null)
+                return;
+
+            if (column.Name == ColCommand || column.Name == ColAction)
+                SelectCommand();
         }
 
         private void SaveRows()

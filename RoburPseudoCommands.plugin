@@ -1,6 +1,8 @@
 {
   "assemblies": {
-    "RoburPseudoCommands": "RoburPseudoCommands.dll, RoburPseudoCommands.ModulePluginHost"
+    "RoburPseudoCommands": {
+      "assembly": "RoburPseudoCommands.dll, RoburPseudoCommands.ModulePluginHost"
+    }
   },
   "actions": {
     "id_pseudo_command": {

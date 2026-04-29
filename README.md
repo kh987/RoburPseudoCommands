@@ -26,6 +26,8 @@ Edit that user file and run `pseudo_reload_aliases` to reload it.
 The editor shows whether an alias is already active or requires a Robur restart.
 This is expected: Robur command names are registered during plugin initialization.
 The editor hides `Action` and `Args` by default; enable `Расширенно` to edit those fields.
+Use the `Command...` button, or double-click the command/action cell, to choose from actions discovered in installed `.plugin` files.
+The picker fills both `command` and `action`, which is useful when several Robur actions invoke the same command.
 
 Diagnostic log:
 
