@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Data;
 using System.Drawing;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Windows.Forms;
 
@@ -148,12 +149,21 @@ namespace RoburPseudoCommands
             };
 
             buttons.Controls.Add(CreateButton("Закрыть", Close, "Закрыть окно редактора."));
+            buttons.Controls.Add(CreateButton("О плагине", ShowAbout, "Показать версию, стадию и диагностические пути плагина."));
             buttons.Controls.Add(CreateButton("Сбросить", ReloadRows, "Отменить несохраненные изменения и перечитать active aliases.json."));
             buttons.Controls.Add(CreateButton("Сохранить", SaveRows, "Записать таблицу в active aliases.json."));
             buttons.Controls.Add(CreateButton("Экспорт", ExportRows, "Сохранить текущую таблицу aliases в отдельный JSON-файл."));
             buttons.Controls.Add(CreateButton("Импорт", ImportRows, "Загрузить aliases из JSON в таблицу без сохранения active config."));
             buttons.Controls.Add(CreateButton("Удалить", DeleteSelectedRows, "Удалить выбранные строки из таблицы."));
             buttons.Controls.Add(CreateButton("Добавить", AddRow, "Добавить новую строку псевдокоманды."));
+            buttons.Controls.Add(new Label
+            {
+                Text = "Версия: " + GetPluginVersion(),
+                AutoSize = true,
+                Anchor = AnchorStyles.Left,
+                Padding = new Padding(0, 8, 12, 0),
+                Margin = new Padding(4)
+            });
             root.Controls.Add(buttons, 0, 3);
         }
 
@@ -414,8 +424,8 @@ namespace RoburPseudoCommands
             Logger.Info("alias editor saved aliases count=" + entries.Count + " path='" + AliasStore.GetConfigPath() + "' restartRequired=" + restartRequired + " cacheCleared=" + cacheCleared);
 
             var message = restartRequired
-                ? "Сохранено. Для регистрации новых, удаленных или переименованных псевдокоманд перезапустите Robur."
-                : "Сохранено. Изменения назначений применятся после Reload aliases.";
+                ? "Сохранено. Новые, удаленные или переименованные псевдокоманды начнут работать после перезапуска Robur."
+                : "Сохранено. Для уже активных псевдокоманд изменения назначений применены в active config; если Robur еще держит старое назначение, выполните pseudo_reload_aliases или перезапустите Robur.";
 
             MessageBox.Show(this, message, "Псевдокоманды", MessageBoxButtons.OK, MessageBoxIcon.Information);
             RefreshStatuses();
@@ -539,6 +549,57 @@ namespace RoburPseudoCommands
             }
         }
 
+        private void ShowAbout()
+        {
+            var assembly = Assembly.GetExecutingAssembly();
+            var text = new StringBuilder();
+            text.AppendLine("RoburPseudoCommands");
+            text.AppendLine();
+            text.AppendLine("Версия: " + GetPluginVersion());
+            text.AppendLine("Стадия: Dev / 0.5.0, ручная проверка продолжается");
+            text.AppendLine();
+            text.AppendLine("DLL:");
+            text.AppendLine(assembly.Location);
+            text.AppendLine();
+            text.AppendLine("Active aliases:");
+            text.AppendLine(AliasStore.GetConfigPath());
+            text.AppendLine();
+            text.AppendLine("Log:");
+            text.AppendLine(Logger.LogPath);
+            text.AppendLine();
+            text.AppendLine("Aliases в таблице: " + CountVisibleRows());
+
+            MessageBox.Show(this, text.ToString(), "О плагине", MessageBoxButtons.OK, MessageBoxIcon.Information);
+        }
+
+        private int CountVisibleRows()
+        {
+            return _table.Rows
+                .Cast<DataRow>()
+                .Count(x => x.RowState != DataRowState.Deleted);
+        }
+
+        private static string GetPluginVersion()
+        {
+            var assembly = Assembly.GetExecutingAssembly();
+            var informational = assembly
+                .GetCustomAttributes(typeof(AssemblyInformationalVersionAttribute), false)
+                .OfType<AssemblyInformationalVersionAttribute>()
+                .FirstOrDefault();
+
+            if (informational != null && !string.IsNullOrWhiteSpace(informational.InformationalVersion))
+                return StripSourceRevision(informational.InformationalVersion);
+
+            var version = assembly.GetName().Version;
+            return version == null ? "unknown" : version.ToString();
+        }
+
+        private static string StripSourceRevision(string version)
+        {
+            var index = (version ?? string.Empty).IndexOf('+');
+            return index < 0 ? version : version.Substring(0, index);
+        }
+
         private void RefreshStatuses()
         {
             var aliases = _table.Rows
@@ -561,11 +622,11 @@ namespace RoburPseudoCommands
                 .Cast<DataRow>()
                 .Where(x => x.RowState != DataRowState.Deleted)
                 .ToList();
-            var active = rows.Count(x => GetCell(x, ColStatus) == "Активна");
-            var restart = rows.Count(x => GetCell(x, ColStatus) == "Требуется перезапуск");
+            var active = rows.Count(x => GetCell(x, ColStatus) == "Активна сейчас");
+            var restart = rows.Count(x => IsRestartStatus(GetCell(x, ColStatus)));
             var invalid = rows.Count(x => IsInvalidStatus(GetCell(x, ColStatus)));
             _summaryLabel.Text = string.Format(
-                "Всего: {0}; активных: {1}; требуется перезапуск: {2}; ошибок: {3}",
+                "Всего: {0}; активны сейчас: {1}; нужен перезапуск Robur: {2}; ошибок: {3}",
                 rows.Count,
                 active,
                 restart,
@@ -594,8 +655,8 @@ namespace RoburPseudoCommands
                 return "Нет команды/action";
 
             return DynamicAliasCommandFactory.IsRegistered(alias)
-                ? "Активна"
-                : "Требуется перезапуск";
+                ? "Активна сейчас"
+                : "Новая: после сохранения перезапустите Robur";
         }
 
         private List<string> GetValidationErrors()
@@ -621,7 +682,12 @@ namespace RoburPseudoCommands
 
         private static bool IsInvalidStatus(string status)
         {
-            return status != "Активна" && status != "Требуется перезапуск";
+            return status != "Активна сейчас" && !IsRestartStatus(status);
+        }
+
+        private static bool IsRestartStatus(string status)
+        {
+            return (status ?? string.Empty).IndexOf("перезапустите Robur", StringComparison.OrdinalIgnoreCase) >= 0;
         }
 
         private List<AliasEntry> BuildEntries()
