@@ -78,7 +78,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\build-tpm.ps1 -Rob
 ## Версия и стадия
 
 - Версия: `v0.5.1` package / `0.5.1-dev` informational version в UI.
-- Стадия: `Dev`; ручная проверка `0.5.1` выполнена, но `Stable` не присвоен.
+- Стадия: `Stabilization`; функциональность `0.5.1` заморожена, ручная проверка выполнена, но `Stable` не присвоен.
 - Последняя стабильная версия: нет формально подтвержденной `Stable`.
 - Актуальная отсечка: `07ed99e Update alias preset and safer reset UI`.
 - Актуальный TPM: `D:\Codex\RoburPseudoCommands\dist\RoburPseudoCommands-0.5.1.tpm`.
