@@ -13,12 +13,6 @@
       "command": "polyline",
       "args": [],
       "description": "Example alias"
-    },
-    {
-      "alias": "PGA",
-      "command": "pseudo_show_aliases",
-      "args": [],
-      "description": "Show aliases from this plugin"
     }
   ]
 }

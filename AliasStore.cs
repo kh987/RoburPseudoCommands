@@ -62,6 +62,14 @@ namespace RoburPseudoCommands
         public static List<AliasEntry> LoadEntries()
         {
             var path = EnsureConfigFile();
+            return LoadEntriesFromFile(path);
+        }
+
+        public static List<AliasEntry> LoadEntriesFromFile(string path)
+        {
+            if (string.IsNullOrWhiteSpace(path))
+                throw new ArgumentException("Import path is empty.", "path");
+
             var serializer = new DataContractJsonSerializer(typeof(AliasConfig));
 
             AliasConfig config;
@@ -85,6 +93,19 @@ namespace RoburPseudoCommands
         public static void SaveEntries(IEnumerable<AliasEntry> entries)
         {
             var path = EnsureConfigFile();
+            WriteEntries(path, entries);
+        }
+
+        public static void ExportEntries(string path, IEnumerable<AliasEntry> entries)
+        {
+            if (string.IsNullOrWhiteSpace(path))
+                throw new ArgumentException("Export path is empty.", "path");
+
+            WriteEntries(path, entries);
+        }
+
+        private static void WriteEntries(string path, IEnumerable<AliasEntry> entries)
+        {
             var config = new AliasConfig
             {
                 Aliases = new List<AliasEntry>()
@@ -99,11 +120,137 @@ namespace RoburPseudoCommands
                 config.Aliases.Add(entry);
             }
 
-            var serializer = new DataContractJsonSerializer(typeof(AliasConfig));
-            using (var stream = File.Create(path))
+            File.WriteAllText(path, FormatConfig(config), new UTF8Encoding(false));
+        }
+
+        private static string FormatConfig(AliasConfig config)
+        {
+            var text = new StringBuilder();
+            var aliases = config == null || config.Aliases == null
+                ? new List<AliasEntry>()
+                : config.Aliases;
+
+            text.AppendLine("{");
+            text.AppendLine("  \"aliases\": [");
+
+            for (var i = 0; i < aliases.Count; i++)
             {
-                serializer.WriteObject(stream, config);
+                var entry = aliases[i] ?? new AliasEntry();
+                entry.Normalize();
+
+                text.AppendLine("    {");
+                AppendJsonProperty(text, "alias", entry.Alias, true);
+                AppendJsonProperty(text, "action", entry.Action, true);
+                AppendJsonProperty(text, "command", entry.Command, true);
+                AppendJsonArrayProperty(text, "args", entry.Args, true);
+                AppendJsonProperty(text, "description", entry.Description, false);
+                text.Append("    }");
+
+                if (i + 1 < aliases.Count)
+                    text.Append(",");
+
+                text.AppendLine();
             }
+
+            text.AppendLine("  ]");
+            text.AppendLine("}");
+            return text.ToString();
+        }
+
+        private static void AppendJsonProperty(StringBuilder text, string name, string value, bool comma)
+        {
+            text
+                .Append("      \"")
+                .Append(EscapeJsonString(name))
+                .Append("\": \"")
+                .Append(EscapeJsonString(value ?? string.Empty))
+                .Append("\"");
+
+            if (comma)
+                text.Append(",");
+
+            text.AppendLine();
+        }
+
+        private static void AppendJsonArrayProperty(StringBuilder text, string name, IList<string> values, bool comma)
+        {
+            values = values ?? new List<string>();
+
+            text
+                .Append("      \"")
+                .Append(EscapeJsonString(name))
+                .Append("\": ");
+
+            if (values.Count == 0)
+            {
+                text.Append("[]");
+            }
+            else
+            {
+                text.AppendLine("[");
+                for (var i = 0; i < values.Count; i++)
+                {
+                    text
+                        .Append("        \"")
+                        .Append(EscapeJsonString(values[i] ?? string.Empty))
+                        .Append("\"");
+
+                    if (i + 1 < values.Count)
+                        text.Append(",");
+
+                    text.AppendLine();
+                }
+
+                text.Append("      ]");
+            }
+
+            if (comma)
+                text.Append(",");
+
+            text.AppendLine();
+        }
+
+        private static string EscapeJsonString(string value)
+        {
+            if (string.IsNullOrEmpty(value))
+                return string.Empty;
+
+            var text = new StringBuilder();
+            foreach (var ch in value)
+            {
+                switch (ch)
+                {
+                    case '\\':
+                        text.Append("\\\\");
+                        break;
+                    case '"':
+                        text.Append("\\\"");
+                        break;
+                    case '\b':
+                        text.Append("\\b");
+                        break;
+                    case '\f':
+                        text.Append("\\f");
+                        break;
+                    case '\n':
+                        text.Append("\\n");
+                        break;
+                    case '\r':
+                        text.Append("\\r");
+                        break;
+                    case '\t':
+                        text.Append("\\t");
+                        break;
+                    default:
+                        if (char.IsControl(ch))
+                            text.Append("\\u").Append(((int)ch).ToString("x4"));
+                        else
+                            text.Append(ch);
+                        break;
+                }
+            }
+
+            return text.ToString();
         }
 
         private static string EnsureConfigFile()
@@ -156,12 +303,6 @@ namespace RoburPseudoCommands
       ""command"": ""polyline"",
       ""args"": [],
       ""description"": ""Example alias""
-    },
-    {
-      ""alias"": ""PGA"",
-      ""command"": ""pseudo_show_aliases"",
-      ""args"": [],
-      ""description"": ""Show aliases from this plugin""
     }
   ]
 }";

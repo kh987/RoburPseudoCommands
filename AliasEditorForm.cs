@@ -23,6 +23,7 @@ namespace RoburPseudoCommands
         private readonly TextBox _filterTextBox;
         private readonly CheckBox _advancedCheckBox;
         private readonly Label _summaryLabel;
+        private readonly ToolTip _toolTip;
 
         public AliasEditorForm()
         {
@@ -38,6 +39,7 @@ namespace RoburPseudoCommands
             _filterTextBox = new TextBox();
             _advancedCheckBox = new CheckBox();
             _summaryLabel = new Label();
+            _toolTip = new ToolTip();
 
             BuildLayout();
             LoadRows();
@@ -145,17 +147,17 @@ namespace RoburPseudoCommands
                 WrapContents = false
             };
 
-            buttons.Controls.Add(CreateButton("Закрыть", Close));
-            buttons.Controls.Add(CreateButton("Лог", ShowLog));
-            buttons.Controls.Add(CreateButton("Перезагрузить", ReloadRows));
-            buttons.Controls.Add(CreateButton("Сохранить", SaveRows));
-            buttons.Controls.Add(CreateButton("Удалить", DeleteSelectedRows));
-            buttons.Controls.Add(CreateButton("Добавить", AddRow));
-            buttons.Controls.Add(CreateButton("\u041a\u043e\u043c\u0430\u043d\u0434\u0430...", SelectCommand));
+            buttons.Controls.Add(CreateButton("Закрыть", Close, "Закрыть окно редактора."));
+            buttons.Controls.Add(CreateButton("Сбросить", ReloadRows, "Отменить несохраненные изменения и перечитать active aliases.json."));
+            buttons.Controls.Add(CreateButton("Сохранить", SaveRows, "Записать таблицу в active aliases.json."));
+            buttons.Controls.Add(CreateButton("Экспорт", ExportRows, "Сохранить текущую таблицу aliases в отдельный JSON-файл."));
+            buttons.Controls.Add(CreateButton("Импорт", ImportRows, "Загрузить aliases из JSON в таблицу без сохранения active config."));
+            buttons.Controls.Add(CreateButton("Удалить", DeleteSelectedRows, "Удалить выбранные строки из таблицы."));
+            buttons.Controls.Add(CreateButton("Добавить", AddRow, "Добавить новую строку псевдокоманды."));
             root.Controls.Add(buttons, 0, 3);
         }
 
-        private Button CreateButton(string text, Action action)
+        private Button CreateButton(string text, Action action, string toolTipText)
         {
             var button = new Button
             {
@@ -166,6 +168,7 @@ namespace RoburPseudoCommands
             };
 
             button.Click += delegate { action(); };
+            _toolTip.SetToolTip(button, toolTipText);
             return button;
         }
 
@@ -217,9 +220,14 @@ namespace RoburPseudoCommands
 
         private void LoadRows()
         {
+            LoadRows(AliasStore.LoadEntries());
+        }
+
+        private void LoadRows(IEnumerable<AliasEntry> entries)
+        {
             _table.Clear();
 
-            foreach (var entry in AliasStore.LoadEntries())
+            foreach (var entry in entries ?? Enumerable.Empty<AliasEntry>())
             {
                 if (entry == null)
                     continue;
@@ -414,34 +422,121 @@ namespace RoburPseudoCommands
             _table.AcceptChanges();
         }
 
-        private void ShowLog()
+        private void ExportRows()
         {
-            var text = new StringBuilder();
-            text.AppendLine("Log file:");
-            text.AppendLine(Logger.LogPath);
-            text.AppendLine();
+            _grid.EndEdit();
+            _bindingSource.EndEdit();
+            RefreshStatuses();
 
+            var errors = GetValidationErrors();
+            if (errors.Count > 0)
+            {
+                MessageBox.Show(
+                    this,
+                    string.Join(Environment.NewLine, errors.ToArray()),
+                    "Проверьте псевдокоманды",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Warning);
+                return;
+            }
+
+            List<AliasEntry> entries;
             try
             {
-                if (!System.IO.File.Exists(Logger.LogPath))
-                {
-                    text.AppendLine("Log file does not exist yet.");
-                }
-                else
-                {
-                    var lines = System.IO.File.ReadAllLines(Logger.LogPath, Encoding.UTF8);
-                    var start = Math.Max(0, lines.Length - 40);
-                    for (var i = start; i < lines.Length; i++)
-                        text.AppendLine(lines[i]);
-                }
+                entries = BuildEntries();
             }
-            catch (Exception ex)
+            catch (FormatException ex)
             {
-                text.AppendLine("Failed to read log:");
-                text.AppendLine(ex.Message);
+                MessageBox.Show(
+                    this,
+                    ex.Message,
+                    "Проверьте аргументы",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Warning);
+                return;
             }
 
-            MessageBox.Show(this, text.ToString(), "Log", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            using (var dialog = new SaveFileDialog())
+            {
+                dialog.Title = "Экспорт псевдокоманд";
+                dialog.Filter = "JSON aliases (*.json)|*.json|Все файлы (*.*)|*.*";
+                dialog.FileName = "aliases.json";
+                dialog.DefaultExt = "json";
+                dialog.AddExtension = true;
+                dialog.OverwritePrompt = true;
+
+                if (dialog.ShowDialog(this) != DialogResult.OK)
+                    return;
+
+                try
+                {
+                    AliasStore.ExportEntries(dialog.FileName, entries);
+                    Logger.Info("alias editor exported aliases count=" + entries.Count + " path='" + dialog.FileName + "'");
+                    MessageBox.Show(
+                        this,
+                        "Псевдокоманды экспортированы.",
+                        "Псевдокоманды",
+                        MessageBoxButtons.OK,
+                        MessageBoxIcon.Information);
+                }
+                catch (Exception ex)
+                {
+                    Logger.Error("failed to export aliases to '" + dialog.FileName + "'", ex);
+                    MessageBox.Show(
+                        this,
+                        ex.Message,
+                        "Не удалось экспортировать",
+                        MessageBoxButtons.OK,
+                        MessageBoxIcon.Error);
+                }
+            }
+        }
+
+        private void ImportRows()
+        {
+            if (!ConfirmDiscardChanges())
+                return;
+
+            using (var dialog = new OpenFileDialog())
+            {
+                dialog.Title = "Импорт псевдокоманд";
+                dialog.Filter = "JSON aliases (*.json)|*.json|Все файлы (*.*)|*.*";
+                dialog.DefaultExt = "json";
+                dialog.CheckFileExists = true;
+                dialog.Multiselect = false;
+
+                if (dialog.ShowDialog(this) != DialogResult.OK)
+                    return;
+
+                List<AliasEntry> entries;
+                try
+                {
+                    entries = AliasStore.LoadEntriesFromFile(dialog.FileName);
+                }
+                catch (Exception ex)
+                {
+                    Logger.Error("failed to import aliases from '" + dialog.FileName + "'", ex);
+                    MessageBox.Show(
+                        this,
+                        ex.Message,
+                        "Не удалось импортировать",
+                        MessageBoxButtons.OK,
+                        MessageBoxIcon.Error);
+                    return;
+                }
+
+                _bindingSource.Filter = string.Empty;
+                _filterTextBox.Text = string.Empty;
+                LoadRows(entries);
+                RefreshStatuses();
+                Logger.Info("alias editor imported aliases count=" + entries.Count + " path='" + dialog.FileName + "'");
+                MessageBox.Show(
+                    this,
+                    "Псевдокоманды импортированы в таблицу. Нажмите \"Сохранить\", чтобы записать их в active config.",
+                    "Псевдокоманды",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Information);
+            }
         }
 
         private void RefreshStatuses()
@@ -480,10 +575,14 @@ namespace RoburPseudoCommands
         private string GetStatus(DataRow row, IDictionary<string, int> aliases)
         {
             var alias = GetCell(row, ColAlias);
+            var action = GetCell(row, ColAction);
             var command = GetCell(row, ColCommand);
 
             if (string.IsNullOrEmpty(alias))
                 return "Пустое имя";
+
+            if (alias.StartsWith("pseudo_", StringComparison.OrdinalIgnoreCase))
+                return "Служебное имя";
 
             if (!DynamicAliasCommandFactory.IsSupportedAliasName(alias))
                 return "Некорректное имя";
@@ -491,8 +590,8 @@ namespace RoburPseudoCommands
             if (aliases.ContainsKey(alias) && aliases[alias] > 1)
                 return "Дубликат";
 
-            if (string.IsNullOrEmpty(command))
-                return "Нет команды";
+            if (string.IsNullOrEmpty(command) && string.IsNullOrEmpty(action))
+                return "Нет команды/action";
 
             return DynamicAliasCommandFactory.IsRegistered(alias)
                 ? "Активна"

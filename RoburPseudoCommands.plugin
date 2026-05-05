@@ -21,11 +21,6 @@
       "description": "Настройка псевдокоманд Robur",
       "icon": "ic_robur_pseudo_commands"
     },
-    "id_pseudo_show_aliases": {
-      "cmd": "pseudo_show_aliases",
-      "title": "Show aliases",
-      "description": "Show loaded pseudo commands"
-    },
     "id_pseudo_show_log": {
       "cmd": "pseudo_show_log",
       "title": "Show log",

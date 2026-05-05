@@ -27,8 +27,7 @@ icons/ic_robur_pseudo_commands_*.png
 
 - Как проверить, что Robur увидел плагин:
   - в меню Robur должен появиться пункт `Сервис -> Псевдокоманды...`;
-  - команда `pseudo_show_aliases` должна показать active `aliases.json`;
-  - команда `pseudo_show_log` должна показать путь к логу и последние строки;
+  - окно редактора должно показать active aliases в таблице;
   - после перезапуска Robur aliases из active config должны вводиться в командной строке.
 
 ## Команды
@@ -38,7 +37,6 @@ icons/ic_robur_pseudo_commands_*.png
 | `pseudo_command` | `id_pseudo_command` | Командная строка Robur | Ручной ввод alias через prompt. |
 | `pseudo_edit_aliases` | `id_pseudo_edit_aliases` | `Сервис -> Псевдокоманды...`, командная строка Robur | Открыть редактор aliases. |
 | `pseudo_reload_aliases` | `id_pseudo_reload_aliases` | Командная строка Robur | Перечитать active `aliases.json`. |
-| `pseudo_show_aliases` | `id_pseudo_show_aliases` | Командная строка Robur | Показать active aliases и пути конфигурации. |
 | `pseudo_show_log` | `id_pseudo_show_log` | Командная строка Robur | Показать путь к диагностическому логу и последние строки. |
 | `pseudo_alias_bootstrap` | нет публичного action | Внутренняя команда | Прогрев command layer после старта Robur. |
 | Dynamic aliases из `aliases.json` | найденный Robur action, если применимо | Командная строка Robur | Запустить связанную команду или action Robur. |
