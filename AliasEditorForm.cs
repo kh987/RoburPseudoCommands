@@ -149,9 +149,9 @@ namespace RoburPseudoCommands
             };
 
             buttons.Controls.Add(CreateButton("Закрыть", Close, "Закрыть окно редактора."));
-            buttons.Controls.Add(CreateButton("О плагине", ShowAbout, "Показать версию, стадию и диагностические пути плагина."));
-            buttons.Controls.Add(CreateButton("Сбросить", ReloadRows, "Отменить несохраненные изменения и перечитать active aliases.json."));
             buttons.Controls.Add(CreateButton("Сохранить", SaveRows, "Записать таблицу в active aliases.json."));
+            buttons.Controls.Add(CreateButton("О плагине", ShowAbout, "Показать версию, стадию и диагностические пути плагина."));
+            buttons.Controls.Add(CreateButton("Отменить правки", ReloadRows, "Отменить несохраненные изменения и заново загрузить active aliases.json."));
             buttons.Controls.Add(CreateButton("Экспорт", ExportRows, "Сохранить текущую таблицу aliases в отдельный JSON-файл."));
             buttons.Controls.Add(CreateButton("Импорт", ImportRows, "Загрузить aliases из JSON в таблицу без сохранения active config."));
             buttons.Controls.Add(CreateButton("Удалить", DeleteSelectedRows, "Удалить выбранные строки из таблицы."));
@@ -254,7 +254,9 @@ namespace RoburPseudoCommands
 
         private void ReloadRows()
         {
-            if (!ConfirmDiscardChanges())
+            if (!ConfirmDiscardChanges(
+                    "Отменить правки",
+                    "Отменить несохраненные изменения и перечитать active aliases.json?"))
                 return;
 
             LoadRows();
@@ -265,13 +267,20 @@ namespace RoburPseudoCommands
 
         private bool ConfirmDiscardChanges()
         {
+            return ConfirmDiscardChanges(
+                "Псевдокоманды",
+                "Несохраненные изменения будут потеряны. Продолжить?");
+        }
+
+        private bool ConfirmDiscardChanges(string title, string message)
+        {
             var changes = _table.GetChanges();
             if (changes != null && changes.Rows.Count > 0)
             {
                 var result = MessageBox.Show(
                     this,
-                    "Несохраненные изменения будут потеряны. Продолжить?",
-                    "Псевдокоманды",
+                    message,
+                    title,
                     MessageBoxButtons.YesNo,
                     MessageBoxIcon.Question);
 
