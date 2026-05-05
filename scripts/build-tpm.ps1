@@ -1,6 +1,6 @@
 param(
     [string] $RoburInstallDir = "C:\Program Files\Topomatic Robur Road 16.0",
-    [string] $Configuration = "Debug"
+    [string] $Configuration = "Release"
 )
 
 $ErrorActionPreference = "Stop"

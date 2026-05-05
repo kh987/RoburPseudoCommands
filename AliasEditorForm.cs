@@ -565,7 +565,7 @@ namespace RoburPseudoCommands
             text.AppendLine("RoburPseudoCommands");
             text.AppendLine();
             text.AppendLine("Версия: " + GetPluginVersion());
-            text.AppendLine("Стадия: Dev / 0.5.0, ручная проверка продолжается");
+            text.AppendLine("Стадия: Stable / 0.5.1");
             text.AppendLine();
             text.AppendLine("DLL:");
             text.AppendLine(assembly.Location);
