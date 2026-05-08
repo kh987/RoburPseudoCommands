@@ -32,6 +32,9 @@ namespace RoburPseudoCommands
 
         private static void Write(string level, string message, Exception exception)
         {
+            if (!PluginSettings.IsLogEnabled())
+                return;
+
             try
             {
                 lock (SyncRoot)

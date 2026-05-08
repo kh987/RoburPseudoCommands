@@ -10,7 +10,7 @@
 
 ## Установка
 
-1. Скачайте `RoburPseudoCommands-0.5.1.tpm` из GitHub Releases.
+1. Скачайте актуальный `RoburPseudoCommands-*.tpm` из GitHub Releases.
 2. Установите пакет через менеджер пакетов Robur.
 3. Перезапустите Robur.
 4. Откройте `Сервис -> Псевдокоманды...`.
@@ -59,7 +59,7 @@ Bundled preset содержит 34 aliases. Если active config уже сущ
 
 - В меню Robur есть пункт `Сервис -> Псевдокоманды...`.
 - Окно редактора открывается.
-- В окне `О плагине` указана версия `0.5.1` и стадия `Stable / 0.5.1`.
+- В окне `О плагине` указана актуальная версия плагина и состояние диагностического лога.
 - В таблице aliases отображается 34 записи при первом active config.
 - Несколько aliases запускают связанные команды Robur после перезапуска.
 
@@ -68,6 +68,7 @@ Bundled preset содержит 34 aliases. Если active config уже сущ
 - Новые, удалённые или переименованные alias-имена требуют перезапуска Robur.
 - Изменение target существующего alias можно применять через `pseudo_reload_aliases`, но при старом кэше Robur может понадобиться перезапуск.
 - Bundled `aliases.json` используется только как стартовый preset и не перезаписывает существующий active config.
+- Диагностический лог по умолчанию отключён; включите `Вести лог` в окне редактора, если нужен файл диагностики.
 - Space-as-Enter и Enter для однобуквенного alias штатными command variants не подтверждены.
 - Горячие клавиши по умолчанию не назначаются, чтобы не конфликтовать со штатными назначениями Robur.
 - Плагин не создаёт геометрию и не работает напрямую с `DwgEntity` или `DrawingLayer`.
@@ -80,11 +81,11 @@ Bundled preset содержит 34 aliases. Если active config уже сущ
 powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\build-tpm.ps1 -Configuration Release -RoburInstallDir "C:\Program Files\Topomatic Robur Road 16.0"
 ```
 
-Готовый пакет будет создан в `dist\RoburPseudoCommands-0.5.1.tpm`.
+Готовый пакет будет создан в `dist\RoburPseudoCommands-<version>.tpm`.
 
 ## Версия
 
-- Версия плагина: `v0.5.1`.
+- Последняя стабильная версия: `v0.6.0`.
 - Стадия: `Stable`.
 - Проверенный host/runtime: Robur 16.0, .NET Framework `net48`.
 

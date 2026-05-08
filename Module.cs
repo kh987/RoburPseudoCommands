@@ -153,6 +153,8 @@ namespace RoburPseudoCommands
             var sb = new StringBuilder();
             sb.AppendLine("Log file:");
             sb.AppendLine(Logger.LogPath);
+            sb.AppendLine("Log status:");
+            sb.AppendLine(PluginSettings.IsLogEnabled() ? "Enabled" : "Disabled");
             sb.AppendLine();
 
             try

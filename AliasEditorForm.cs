@@ -22,6 +22,7 @@ namespace RoburPseudoCommands
         private readonly BindingSource _bindingSource;
         private readonly DataGridView _grid;
         private readonly TextBox _filterTextBox;
+        private readonly CheckBox _logEnabledCheckBox;
         private readonly CheckBox _advancedCheckBox;
         private readonly Label _summaryLabel;
         private readonly ToolTip _toolTip;
@@ -38,6 +39,7 @@ namespace RoburPseudoCommands
             _bindingSource = new BindingSource();
             _grid = new DataGridView();
             _filterTextBox = new TextBox();
+            _logEnabledCheckBox = new CheckBox();
             _advancedCheckBox = new CheckBox();
             _summaryLabel = new Label();
             _toolTip = new ToolTip();
@@ -69,11 +71,12 @@ namespace RoburPseudoCommands
             {
                 Dock = DockStyle.Top,
                 AutoSize = true,
-                ColumnCount = 3,
+                ColumnCount = 4,
                 RowCount = 2
             };
             top.ColumnStyles.Add(new ColumnStyle(SizeType.AutoSize));
             top.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
+            top.ColumnStyles.Add(new ColumnStyle(SizeType.AutoSize));
             top.ColumnStyles.Add(new ColumnStyle(SizeType.AutoSize));
             top.RowStyles.Add(new RowStyle(SizeType.AutoSize));
             top.RowStyles.Add(new RowStyle(SizeType.AutoSize));
@@ -90,12 +93,22 @@ namespace RoburPseudoCommands
             _filterTextBox.TextChanged += delegate { ApplyFilter(); };
             top.Controls.Add(_filterTextBox, 1, 0);
 
+            _logEnabledCheckBox.Text = "Вести лог";
+            _logEnabledCheckBox.AutoSize = true;
+            _logEnabledCheckBox.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+            _logEnabledCheckBox.Margin = new Padding(12, 3, 0, 0);
+            _logEnabledCheckBox.Checked = PluginSettings.IsLogEnabled();
+            _logEnabledCheckBox.CheckedChanged += delegate { SaveLogEnabledSetting(); };
+            _toolTip.SetToolTip(_logEnabledCheckBox, "Включить запись диагностического лога в AppData. По умолчанию лог отключен.");
+            top.Controls.Add(_logEnabledCheckBox, 2, 0);
+            top.SetRowSpan(_logEnabledCheckBox, 2);
+
             _advancedCheckBox.Text = "Расширенно";
             _advancedCheckBox.AutoSize = true;
             _advancedCheckBox.Anchor = AnchorStyles.Top | AnchorStyles.Right;
             _advancedCheckBox.Margin = new Padding(12, 3, 0, 0);
             _advancedCheckBox.CheckedChanged += delegate { UpdateAdvancedMode(); };
-            top.Controls.Add(_advancedCheckBox, 2, 0);
+            top.Controls.Add(_advancedCheckBox, 3, 0);
             top.SetRowSpan(_advancedCheckBox, 2);
 
             top.Controls.Add(new Label
@@ -180,6 +193,23 @@ namespace RoburPseudoCommands
             button.Click += delegate { action(); };
             _toolTip.SetToolTip(button, toolTipText);
             return button;
+        }
+
+        private void SaveLogEnabledSetting()
+        {
+            try
+            {
+                PluginSettings.SetLogEnabled(_logEnabledCheckBox.Checked);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(
+                    this,
+                    ex.Message,
+                    "Не удалось сохранить настройку лога",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Error);
+            }
         }
 
         private void AddColumns()
@@ -565,7 +595,7 @@ namespace RoburPseudoCommands
             text.AppendLine("RoburPseudoCommands");
             text.AppendLine();
             text.AppendLine("Версия: " + GetPluginVersion());
-            text.AppendLine("Стадия: Stable / 0.5.1");
+            text.AppendLine("Стадия: Stable / 0.6.0");
             text.AppendLine();
             text.AppendLine("DLL:");
             text.AppendLine(assembly.Location);
@@ -574,7 +604,11 @@ namespace RoburPseudoCommands
             text.AppendLine(AliasStore.GetConfigPath());
             text.AppendLine();
             text.AppendLine("Log:");
+            text.AppendLine(PluginSettings.IsLogEnabled() ? "Включен" : "Отключен");
             text.AppendLine(Logger.LogPath);
+            text.AppendLine();
+            text.AppendLine("Settings:");
+            text.AppendLine(PluginSettings.SettingsPath);
             text.AppendLine();
             text.AppendLine("Aliases в таблице: " + CountVisibleRows());
 
