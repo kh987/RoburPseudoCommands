@@ -347,7 +347,7 @@ WinForms/Win32:
 - версия `v0.7.0`;
 - exact Stable artifact собран из commit `d78baa7`;
 - TPM проверен пользователем в Robur Genplan 16.0;
-- tag и GitHub Release `v0.7.0` оформляются отдельно.
+- tag `v0.7.0` и GitHub Release опубликованы; проверенный TPM приложен как release asset.
 
 Новый цикл:
 
@@ -431,5 +431,5 @@ Mini-P2 `0.7.0-stabilization.4` подтверждён 2026-08-30 после run
 Точный Stable TPM `0.7.0`, собранный из commit `d78baa7`, проверен пользователем
 2026-08-30 в Robur Genplan 16.0. Подтверждены загрузка, aliases, QuickInput,
 Space-as-Enter, редактор, выбор action и обновление description. Переход
-`RC -> Stable` завершён; стадия `v0.7.0` — `Stable`. Публикация tag и GitHub
-Release остаётся отдельной операцией.
+`RC -> Stable` завершён; стадия `v0.7.0` — `Stable`. Tag `v0.7.0` и GitHub
+Release опубликованы 2026-08-30; скачанный release asset повторно сверен по SHA-256.

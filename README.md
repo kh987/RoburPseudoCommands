@@ -118,7 +118,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\build-tpm.ps1 -Con
 - Последняя проверенная стабильная версия: `v0.7.0`.
 - Точный TPM `0.7.0`, собранный из commit `d78baa7`, проверен пользователем в Robur Genplan 16.0, .NET Framework `net48`.
 - Подтверждены загрузка, aliases, QuickInput, Space-as-Enter, редактор и обновление description после повторного выбора action.
-- Последний опубликованный GitHub Release: `v0.6.0`; публикация `v0.7.0` выполняется отдельно.
+- Последний опубликованный GitHub Release: [`v0.7.0`](https://github.com/kh987/RoburPseudoCommands/releases/tag/v0.7.0).
 
 ## Robur Docs / API-основание
 
