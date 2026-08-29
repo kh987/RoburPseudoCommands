@@ -1,9 +1,9 @@
-# P2 — RoburPseudoCommands v0.7.0 Stable candidate
+# P2 — RoburPseudoCommands v0.7.0 Stable
 
 Дата: 2026-08-30
 Базовая версия: `v0.6.0 Stable`
 Текущая версия: `v0.7.0`
-Стадия: `Stable candidate`; exact Stable TPM ещё требует runtime-проверки
+Стадия: `Stable`; exact Stable TPM проверен пользователем в Robur Genplan 16.0
 Функции `v0.7.0` заморожены; разрешены исправления ошибок, чистка, документация и ручные проверки.
 
 ## 1. Контекст
@@ -70,7 +70,7 @@
 - `SYSTEM_PROJECT.md` — идентификаторы и карточка.
 - `SYSTEM_RELEASE.md`, `73_VERSIONING_POLICY.md` — новая minor-функция от
   `v0.6.0 Stable`.
-- `74_RELEASE_CHECKLIST.md` — только при будущем переходе RC/Stable.
+- `74_RELEASE_CHECKLIST.md` — применён для переходов Stabilization -> RC -> Stable.
 - `SYSTEM_GEOMETRY.md` не подключается: geometry/model данные не меняются.
 
 ## 6. Функциональный контракт
@@ -336,11 +336,18 @@ WinForms/Win32:
 
 ## 15. Отсечки и стадийность
 
-Текущая стабильная точка не изменяется:
+Предыдущая опубликованная стабильная точка:
 
 - commit `98ad11b Add logging toggle`;
 - tag `v0.6.0`;
 - GitHub Release `v0.6.0`.
+
+Текущая проверенная Stable-точка:
+
+- версия `v0.7.0`;
+- exact Stable artifact собран из commit `d78baa7`;
+- TPM проверен пользователем в Robur Genplan 16.0;
+- tag и GitHub Release `v0.7.0` оформляются отдельно.
 
 Новый цикл:
 
@@ -354,7 +361,7 @@ v0.6.0 Stable
   -> Stable v0.7.0
 ```
 
-До ручного подтверждения в Robur нельзя:
+До выполненного ручного подтверждения exact Stable TPM было нельзя:
 
 - называть функцию рабочей или Stable;
 - заменять release `v0.6.0`;
@@ -420,3 +427,9 @@ Mini-P2 `0.7.0-stabilization.4` подтверждён 2026-08-30 после run
 Подготовка Stable artifact разрешена пользователем 2026-08-30 после успешной
 проверки RC.1. Смена metadata на `0.7.0` не считается формальным переходом
 в Stable, пока exact Stable TPM не проверен в Robur Genplan 16.0.
+
+Точный Stable TPM `0.7.0`, собранный из commit `d78baa7`, проверен пользователем
+2026-08-30 в Robur Genplan 16.0. Подтверждены загрузка, aliases, QuickInput,
+Space-as-Enter, редактор, выбор action и обновление description. Переход
+`RC -> Stable` завершён; стадия `v0.7.0` — `Stable`. Публикация tag и GitHub
+Release остаётся отдельной операцией.

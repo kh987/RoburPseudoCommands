@@ -106,14 +106,11 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\build-tpm.ps1 -Con
 ## Версия
 
 - Текущая версия: `v0.7.0`.
-- Стадия: `Stable candidate`; формальный переход в Stable требует проверки exact Stable TPM.
-- Последняя стабильная версия: `v0.6.0`.
-- Проверенный host/runtime точного артефакта `.4`: Robur Genplan 16.0, .NET Framework `net48`.
-- Пользователь подтвердил QuickInput, Space-as-Enter, aliases, редактор и обновление description после повторного выбора action.
-- RC.1 должен пройти отдельную проверку точного собранного TPM перед переходом в Stable.
-- Точный TPM RC.1 проверен пользователем в Robur Genplan 16.0: основные сценарии работают корректно.
-- После смены metadata на Stable новый TPM должен пройти отдельную runtime-проверку.
-- До этой проверки последней подтверждённой Stable-версией остаётся `v0.6.0`.
+- Стадия: `Stable`.
+- Последняя проверенная стабильная версия: `v0.7.0`.
+- Точный TPM `0.7.0`, собранный из commit `d78baa7`, проверен пользователем в Robur Genplan 16.0, .NET Framework `net48`.
+- Подтверждены загрузка, aliases, QuickInput, Space-as-Enter, редактор и обновление description после повторного выбора action.
+- Последний опубликованный GitHub Release: `v0.6.0`; публикация `v0.7.0` выполняется отдельно.
 
 ## Robur Docs / API-основание
 
