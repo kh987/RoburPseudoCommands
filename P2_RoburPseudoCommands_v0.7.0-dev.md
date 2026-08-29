@@ -412,3 +412,7 @@ Mini-P2 `0.7.0-stabilization.4` подтверждён 2026-08-30 после run
 Переход `Stabilization -> RC` подтверждён 2026-08-30 после финального аудита,
 обязательной чистки, Release build `.4` и пользовательской runtime-проверки
 точного TPM в Robur Genplan 16.0. В RC разрешены только исправления release blockers.
+
+Точный TPM RC.1 проверен пользователем в Robur Genplan 16.0:
+загрузка, aliases, QuickInput, Space-as-Enter, редактор и обновление description
+работают корректно. Эта проверка не заменяет runtime-gate будущего Stable TPM.
