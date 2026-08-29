@@ -111,6 +111,12 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\build-tpm.ps1 -Con
 маршрутизация Robur actions, host-owned повтор команды, настройки и защитные
 механизмы RoburPseudoCommands реализованы и адаптированы отдельно.
 
+## Лицензия
+
+Исходный код RoburPseudoCommands распространяется по лицензии [MIT](LICENSE).
+Topomatic Robur, его SDK, библиотеки и товарные знаки в состав проекта не входят
+и регулируются условиями их правообладателей.
+
 ## Версия
 
 - Текущая версия: `v0.7.0`.
