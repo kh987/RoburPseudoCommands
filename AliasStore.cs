@@ -70,24 +70,34 @@ namespace RoburPseudoCommands
             if (string.IsNullOrWhiteSpace(path))
                 throw new ArgumentException("Import path is empty.", "path");
 
-            var serializer = new DataContractJsonSerializer(typeof(AliasConfig));
-
-            AliasConfig config;
-            using (var stream = File.OpenRead(path))
+            try
             {
-                config = (AliasConfig)serializer.ReadObject(stream);
+                var serializer = new DataContractJsonSerializer(typeof(AliasConfig));
+
+                AliasConfig config;
+                using (var stream = File.OpenRead(path))
+                {
+                    config = (AliasConfig)serializer.ReadObject(stream);
+                }
+
+                if (config == null || config.Aliases == null)
+                    return new List<AliasEntry>();
+
+                foreach (var entry in config.Aliases)
+                {
+                    if (entry != null)
+                        entry.Normalize();
+                }
+
+                return config.Aliases;
             }
-
-            if (config == null || config.Aliases == null)
-                return new List<AliasEntry>();
-
-            foreach (var entry in config.Aliases)
+            catch (Exception ex)
             {
-                if (entry != null)
-                    entry.Normalize();
+                throw new InvalidDataException(
+                    "Не удалось прочитать файл псевдокоманд: " + path + Environment.NewLine +
+                    "Файл оставлен без изменений. Резервная копия, если она создавалась: " + path + ".bak",
+                    ex);
             }
-
-            return config.Aliases;
         }
 
         public static void SaveEntries(IEnumerable<AliasEntry> entries)
@@ -120,7 +130,7 @@ namespace RoburPseudoCommands
                 config.Aliases.Add(entry);
             }
 
-            File.WriteAllText(path, FormatConfig(config), new UTF8Encoding(false));
+            AtomicFileWriter.WriteAllText(path, FormatConfig(config), new UTF8Encoding(false));
         }
 
         private static string FormatConfig(AliasConfig config)
@@ -264,9 +274,12 @@ namespace RoburPseudoCommands
             {
                 var bundledPath = Path.Combine(GetAssemblyDirectory(), "aliases.json");
                 if (File.Exists(bundledPath))
-                    File.Copy(bundledPath, path);
+                    AtomicFileWriter.WriteAllText(
+                        path,
+                        File.ReadAllText(bundledPath, Encoding.UTF8),
+                        new UTF8Encoding(false));
                 else
-                    File.WriteAllText(path, DefaultAliasesJson, new UTF8Encoding(false));
+                    AtomicFileWriter.WriteAllText(path, DefaultAliasesJson, new UTF8Encoding(false));
             }
 
             return path;
@@ -274,11 +287,7 @@ namespace RoburPseudoCommands
 
         private static string GetUserConfigPath()
         {
-            var appData = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
-            if (string.IsNullOrEmpty(appData))
-                return Path.Combine(GetAssemblyDirectory(), "aliases.json");
-
-            return Path.Combine(appData, "Topomatic", "RoburPseudoCommands", "aliases.json");
+            return Path.Combine(UserDataPaths.GetPluginDirectory(), "aliases.json");
         }
 
         private static string GetAssemblyDirectory()

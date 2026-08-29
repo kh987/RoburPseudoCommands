@@ -23,6 +23,8 @@ namespace RoburPseudoCommands
         private readonly DataGridView _grid;
         private readonly TextBox _filterTextBox;
         private readonly CheckBox _logEnabledCheckBox;
+        private readonly CheckBox _quickInputEnabledCheckBox;
+        private readonly CheckBox _spaceActsAsEnterCheckBox;
         private readonly CheckBox _advancedCheckBox;
         private readonly Label _summaryLabel;
         private readonly ToolTip _toolTip;
@@ -31,8 +33,9 @@ namespace RoburPseudoCommands
         {
             Text = "Псевдокоманды";
             StartPosition = FormStartPosition.CenterScreen;
-            MinimumSize = new Size(820, 480);
-            Size = new Size(980, 620);
+            AutoScaleMode = AutoScaleMode.Dpi;
+            MinimumSize = new Size(900, 520);
+            Size = new Size(1120, 680);
             Font = SystemFonts.MessageBoxFont;
 
             _table = CreateTable();
@@ -40,6 +43,8 @@ namespace RoburPseudoCommands
             _grid = new DataGridView();
             _filterTextBox = new TextBox();
             _logEnabledCheckBox = new CheckBox();
+            _quickInputEnabledCheckBox = new CheckBox();
+            _spaceActsAsEnterCheckBox = new CheckBox();
             _advancedCheckBox = new CheckBox();
             _summaryLabel = new Label();
             _toolTip = new ToolTip();
@@ -58,9 +63,10 @@ namespace RoburPseudoCommands
             {
                 Dock = DockStyle.Fill,
                 ColumnCount = 1,
-                RowCount = 4,
-                Padding = new Padding(8)
+                RowCount = 5,
+                Padding = new Padding(12)
             };
+            root.RowStyles.Add(new RowStyle(SizeType.AutoSize));
             root.RowStyles.Add(new RowStyle(SizeType.AutoSize));
             root.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
             root.RowStyles.Add(new RowStyle(SizeType.AutoSize));
@@ -69,7 +75,7 @@ namespace RoburPseudoCommands
 
             var top = new TableLayoutPanel
             {
-                Dock = DockStyle.Top,
+                Dock = DockStyle.Fill,
                 AutoSize = true,
                 ColumnCount = 4,
                 RowCount = 2
@@ -119,15 +125,47 @@ namespace RoburPseudoCommands
                 Padding = new Padding(0, 4, 8, 0)
             }, 0, 1);
 
-            top.Controls.Add(new Label
+            var configPathLabel = new Label
             {
                 Text = AliasStore.GetConfigPath(),
-                AutoSize = true,
-                Anchor = AnchorStyles.Left,
+                AutoEllipsis = true,
+                Dock = DockStyle.Fill,
+                TextAlign = ContentAlignment.MiddleLeft,
                 Padding = new Padding(0, 4, 0, 0)
-            }, 1, 1);
+            };
+            _toolTip.SetToolTip(configPathLabel, AliasStore.GetConfigPath());
+            top.Controls.Add(configPathLabel, 1, 1);
 
             root.Controls.Add(top, 0, 0);
+
+            var inputOptions = new FlowLayoutPanel
+            {
+                AutoSize = true,
+                Dock = DockStyle.Fill,
+                FlowDirection = FlowDirection.LeftToRight,
+                Padding = new Padding(0, 6, 0, 2),
+                WrapContents = true
+            };
+
+            _quickInputEnabledCheckBox.Text = "QuickInput для псевдокоманд";
+            _quickInputEnabledCheckBox.AutoSize = true;
+            _quickInputEnabledCheckBox.Checked = PluginSettings.IsQuickInputEnabled();
+            _quickInputEnabledCheckBox.CheckedChanged += delegate { SaveKeyboardInputSettings(); };
+            _toolTip.SetToolTip(
+                _quickInputEnabledCheckBox,
+                "Открывать собственный ввод псевдокоманд у курсора. Enter и Space подтверждают ввод. По умолчанию включено.");
+            inputOptions.Controls.Add(_quickInputEnabledCheckBox);
+
+            _spaceActsAsEnterCheckBox.Text = "Space действует как Enter";
+            _spaceActsAsEnterCheckBox.AutoSize = true;
+            _spaceActsAsEnterCheckBox.Margin = new Padding(18, 3, 0, 3);
+            _spaceActsAsEnterCheckBox.Checked = PluginSettings.IsSpaceActsAsEnterEnabled();
+            _spaceActsAsEnterCheckBox.CheckedChanged += delegate { SaveKeyboardInputSettings(); };
+            _toolTip.SetToolTip(
+                _spaceActsAsEnterCheckBox,
+                "Передавать Space в Robur как штатный Enter: повторять, подтверждать и завершать команды. По умолчанию включено.");
+            inputOptions.Controls.Add(_spaceActsAsEnterCheckBox);
+            root.Controls.Add(inputOptions, 0, 1);
 
             _bindingSource.DataSource = _table;
             _grid.AllowUserToAddRows = false;
@@ -146,19 +184,20 @@ namespace RoburPseudoCommands
             _grid.DataError += delegate(object sender, DataGridViewDataErrorEventArgs e) { e.ThrowException = false; };
             AddColumns();
             UpdateAdvancedMode();
-            root.Controls.Add(_grid, 0, 1);
+            root.Controls.Add(_grid, 0, 2);
 
             _summaryLabel.AutoSize = true;
             _summaryLabel.Dock = DockStyle.Fill;
             _summaryLabel.Padding = new Padding(0, 6, 0, 6);
-            root.Controls.Add(_summaryLabel, 0, 2);
+            root.Controls.Add(_summaryLabel, 0, 3);
 
             var buttons = new FlowLayoutPanel
             {
                 AutoSize = true,
                 Dock = DockStyle.Fill,
                 FlowDirection = FlowDirection.RightToLeft,
-                WrapContents = false
+                WrapContents = true,
+                Padding = new Padding(0, 0, 4, 0)
             };
 
             buttons.Controls.Add(CreateButton("Закрыть", Close, "Закрыть окно редактора."));
@@ -177,7 +216,7 @@ namespace RoburPseudoCommands
                 Padding = new Padding(0, 8, 12, 0),
                 Margin = new Padding(4)
             });
-            root.Controls.Add(buttons, 0, 3);
+            root.Controls.Add(buttons, 0, 4);
         }
 
         private Button CreateButton(string text, Action action, string toolTipText)
@@ -207,6 +246,25 @@ namespace RoburPseudoCommands
                     this,
                     ex.Message,
                     "Не удалось сохранить настройку лога",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Error);
+            }
+        }
+
+        private void SaveKeyboardInputSettings()
+        {
+            try
+            {
+                PluginSettings.SetKeyboardInputOptions(
+                    _quickInputEnabledCheckBox.Checked,
+                    _spaceActsAsEnterCheckBox.Checked);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(
+                    this,
+                    ex.Message,
+                    "Не удалось сохранить настройки ввода",
                     MessageBoxButtons.OK,
                     MessageBoxIcon.Error);
             }
@@ -595,7 +653,7 @@ namespace RoburPseudoCommands
             text.AppendLine("RoburPseudoCommands");
             text.AppendLine();
             text.AppendLine("Версия: " + GetPluginVersion());
-            text.AppendLine("Стадия: Stable / 0.6.0");
+            text.AppendLine("Стадия: Stabilization / 0.7.0-stabilization.3");
             text.AppendLine();
             text.AppendLine("DLL:");
             text.AppendLine(assembly.Location);
@@ -609,6 +667,9 @@ namespace RoburPseudoCommands
             text.AppendLine();
             text.AppendLine("Settings:");
             text.AppendLine(PluginSettings.SettingsPath);
+            text.AppendLine("QuickInput: " + (PluginSettings.IsQuickInputEnabled() ? "Включен" : "Отключен"));
+            text.AppendLine("Space как Enter: " + (PluginSettings.IsSpaceActsAsEnterEnabled() ? "Включен" : "Отключен"));
+            text.AppendLine("Message filter: " + (KeyInterceptor.IsAttached ? "Подключен" : "Отключен"));
             text.AppendLine();
             text.AppendLine("Aliases в таблице: " + CountVisibleRows());
 
@@ -694,8 +755,8 @@ namespace RoburPseudoCommands
             if (aliases.ContainsKey(alias) && aliases[alias] > 1)
                 return "Дубликат";
 
-            if (string.IsNullOrEmpty(command) && string.IsNullOrEmpty(action))
-                return "Нет команды/action";
+            if (string.IsNullOrEmpty(command))
+                return "Нет команды";
 
             return DynamicAliasCommandFactory.IsRegistered(alias)
                 ? "Активна сейчас"

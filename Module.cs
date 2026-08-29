@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
@@ -20,6 +19,14 @@ namespace RoburPseudoCommands
         {
             base.Initialize(factory);
             LogLoaded();
+            try
+            {
+                KeyInterceptor.Attach(() => CadView);
+            }
+            catch (Exception ex)
+            {
+                Logger.Error("failed to attach keyboard message filter; plugin remains available without keyboard interception", ex);
+            }
             AliasCommandBootstrapper.Schedule();
         }
 
@@ -72,22 +79,23 @@ namespace RoburPseudoCommands
         [cmd("pseudo_edit_aliases")]
         public void EditAliases()
         {
-            using (var form = new AliasEditorForm())
+            try
             {
-                form.ShowDialog();
-
-                if (form.Saved)
+                using (var form = new AliasEditorForm())
                 {
-                    try
+                    form.ShowDialog();
+
+                    if (form.Saved)
                     {
                         var count = AliasStore.Reload();
                         Logger.Info("aliases reloaded after editor save count=" + count + " path='" + AliasStore.ActivePath + "'");
                     }
-                    catch (Exception ex)
-                    {
-                        Logger.Error("failed to reload aliases after editor save", ex);
-                    }
                 }
+            }
+            catch (Exception ex)
+            {
+                Logger.Error("failed to open or reload aliases after editor save", ex);
+                MessageDlg.Show("Failed to edit aliases:" + Environment.NewLine + ex.Message);
             }
         }
 
@@ -152,27 +160,29 @@ namespace RoburPseudoCommands
         {
             var sb = new StringBuilder();
             sb.AppendLine("Log file:");
-            sb.AppendLine(Logger.LogPath);
-            sb.AppendLine("Log status:");
-            sb.AppendLine(PluginSettings.IsLogEnabled() ? "Enabled" : "Disabled");
-            sb.AppendLine();
 
             try
             {
-                if (!File.Exists(Logger.LogPath))
+                sb.AppendLine(Logger.LogPath);
+                sb.AppendLine("Log status:");
+                sb.AppendLine(PluginSettings.IsLogEnabled() ? "Enabled" : "Disabled");
+                sb.AppendLine();
+
+                var lines = Logger.ReadTailLines(40);
+                if (lines.Count == 0)
                 {
                     sb.AppendLine("Log file does not exist yet.");
                 }
                 else
                 {
-                    var lines = File.ReadAllLines(Logger.LogPath);
-                    var start = Math.Max(0, lines.Length - 40);
-                    for (var i = start; i < lines.Length; i++)
-                        sb.AppendLine(lines[i]);
+                    foreach (var line in lines)
+                        sb.AppendLine(line);
                 }
             }
             catch (Exception ex)
             {
+                sb.AppendLine("(unavailable)");
+                sb.AppendLine();
                 sb.AppendLine("Failed to read log:");
                 sb.AppendLine(ex.Message);
             }
@@ -210,6 +220,15 @@ namespace RoburPseudoCommands
                 return;
 
             ExecuteAlias(alias, forceExecute);
+        }
+
+        internal static bool IsKnownAlias(string alias)
+        {
+            if (!EnsureAliasesLoaded())
+                return false;
+
+            alias = (alias ?? string.Empty).Trim();
+            return alias.Length > 0 && AliasStore.Aliases.ContainsKey(alias);
         }
 
         private static void LogLoaded()

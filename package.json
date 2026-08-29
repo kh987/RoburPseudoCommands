@@ -1,6 +1,6 @@
 {
   "name": "robur-pseudo-commands",
-  "version": "0.6.0",
+  "version": "0.7.0",
   "caption": "Robur Pseudo Commands",
   "description": "Pseudo command aliases for Topomatic Robur",
   "author": "s.v.kozlov"
