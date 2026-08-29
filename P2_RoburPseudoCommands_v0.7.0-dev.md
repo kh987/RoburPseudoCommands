@@ -20,7 +20,7 @@
 - варианты command id с завершающими Space/CR/LF не исправляют submit behavior;
 - поведение зависит от внутреннего command layer и кэша Robur.
 
-`Y-Abramov/QuickCommands` подтвердил работоспособность альтернативного подхода:
+[Y-Abramov/QuickCommands](https://github.com/Y-Abramov/QuickCommands) подтвердил работоспособность альтернативного подхода:
 перехват первой буквы до command line, собственный popup и запуск по Enter/Space.
 Его повтор последней команды основан на собственной истории плагина и не
 гарантирует совпадение с фактически последней командой Robur.
@@ -249,7 +249,7 @@ WinForms/Win32:
 
 Практический референс поведения:
 
-- `Y-Abramov/QuickCommands`: `KeyInterceptor.cs`, `QuickInputForm.cs`.
+- [Y-Abramov/QuickCommands](https://github.com/Y-Abramov/QuickCommands): `KeyInterceptor.cs`, `QuickInputForm.cs`.
 - Переносится контракт поведения, но не ABR/MCP/profile инфраструктура и не
   собственная история QuickCommands.
 

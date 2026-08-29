@@ -103,6 +103,14 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\build-tpm.ps1 -Con
 
 Готовый пакет будет создан в `dist\RoburPseudoCommands-<version>.tpm`.
 
+## Благодарности и источник идеи
+
+Идея компактного popup-ввода команды и запуска по Enter/Space была почерпнута
+из проекта [Y-Abramov/QuickCommands](https://github.com/Y-Abramov/QuickCommands).
+Проект использовался как поведенческий референс; динамическая регистрация aliases,
+маршрутизация Robur actions, host-owned повтор команды, настройки и защитные
+механизмы RoburPseudoCommands реализованы и адаптированы отдельно.
+
 ## Версия
 
 - Текущая версия: `v0.7.0`.
