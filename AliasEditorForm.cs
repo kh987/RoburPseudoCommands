@@ -435,8 +435,7 @@ namespace RoburPseudoCommands
                 row[ColCommand] = form.SelectedAction.Command;
                 row[ColAction] = form.SelectedAction.Action;
 
-                if (string.IsNullOrEmpty(GetCell(row, ColDescription)))
-                    row[ColDescription] = GetDefaultDescription(form.SelectedAction);
+                row[ColDescription] = GetDefaultDescription(form.SelectedAction);
 
                 Logger.Info("alias editor selected action command='" + form.SelectedAction.Command + "' action='" + form.SelectedAction.Action + "'");
             }
@@ -457,10 +456,10 @@ namespace RoburPseudoCommands
 
         private static string GetDefaultDescription(RoburActionInfo action)
         {
-            if (!string.IsNullOrEmpty(action.Title))
-                return action.Title;
+            if (!string.IsNullOrEmpty(action.Description))
+                return action.Description;
 
-            return action.Description;
+            return action.Title;
         }
 
         private void GridCellDoubleClick(object sender, DataGridViewCellEventArgs e)
@@ -653,7 +652,7 @@ namespace RoburPseudoCommands
             text.AppendLine("RoburPseudoCommands");
             text.AppendLine();
             text.AppendLine("Версия: " + GetPluginVersion());
-            text.AppendLine("Стадия: Stabilization / 0.7.0-stabilization.3");
+            text.AppendLine("Стадия: Stabilization / 0.7.0-stabilization.4");
             text.AppendLine();
             text.AppendLine("DLL:");
             text.AppendLine(assembly.Location);
