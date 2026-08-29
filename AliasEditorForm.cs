@@ -652,7 +652,7 @@ namespace RoburPseudoCommands
             text.AppendLine("RoburPseudoCommands");
             text.AppendLine();
             text.AppendLine("Версия: " + GetPluginVersion());
-            text.AppendLine("Стадия: RC / 0.7.0-rc.1");
+            text.AppendLine("Стадия: Stable / 0.7.0");
             text.AppendLine();
             text.AppendLine("DLL:");
             text.AppendLine(assembly.Location);

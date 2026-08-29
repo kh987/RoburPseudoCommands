@@ -1,9 +1,9 @@
-# P2 — RoburPseudoCommands v0.7.0-rc.1
+# P2 — RoburPseudoCommands v0.7.0 Stable candidate
 
 Дата: 2026-08-30
 Базовая версия: `v0.6.0 Stable`
-Текущая версия: `v0.7.0-rc.1`
-Стадия: `RC` (`Stabilization -> RC` подтверждён пользователем 2026-08-30)
+Текущая версия: `v0.7.0`
+Стадия: `Stable candidate`; exact Stable TPM ещё требует runtime-проверки
 Функции `v0.7.0` заморожены; разрешены исправления ошибок, чистка, документация и ручные проверки.
 
 ## 1. Контекст
@@ -378,7 +378,7 @@ Mini-P2 для поведения Space во время активной ком�
 
 - package: `0.7.0` (числовой формат TPM);
 - assembly/file: `0.7.0.0`;
-- informational/UI: `0.7.0-rc.1`;
+- informational/UI: `0.7.0`;
 - последняя стабильная версия остаётся `v0.6.0`.
 
 Переход `Debug -> Stabilization` подтверждён 2026-08-29. Новые функции для
@@ -416,3 +416,7 @@ Mini-P2 `0.7.0-stabilization.4` подтверждён 2026-08-30 после run
 Точный TPM RC.1 проверен пользователем в Robur Genplan 16.0:
 загрузка, aliases, QuickInput, Space-as-Enter, редактор и обновление description
 работают корректно. Эта проверка не заменяет runtime-gate будущего Stable TPM.
+
+Подготовка Stable artifact разрешена пользователем 2026-08-30 после успешной
+проверки RC.1. Смена metadata на `0.7.0` не считается формальным переходом
+в Stable, пока exact Stable TPM не проверен в Robur Genplan 16.0.
