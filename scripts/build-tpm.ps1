@@ -27,6 +27,11 @@ if ($LASTEXITCODE -ne 0) {
 
 $frameworkDir = Join-Path $repoRoot (Join-Path "bin" (Join-Path $Configuration "net48"))
 $dllPath = Join-Path $frameworkDir "RoburPseudoCommands.dll"
+$harmonyPath = Join-Path $frameworkDir "0Harmony.dll"
+$harmonyLicensePath = Join-Path $frameworkDir "Harmony-LICENSE.txt"
+foreach ($dependencyPath in @($harmonyPath, $harmonyLicensePath)) {
+    if (-not (Test-Path -LiteralPath $dependencyPath)) { throw "Missing runtime dependency: $dependencyPath" }
+}
 if (-not (Test-Path -LiteralPath $dllPath)) {
     throw "Build output not found: $dllPath"
 }
@@ -49,6 +54,8 @@ try {
 
     [System.IO.Compression.ZipFileExtensions]::CreateEntryFromFile($zip, $packageJsonPath, "package.json") | Out-Null
     [System.IO.Compression.ZipFileExtensions]::CreateEntryFromFile($zip, $dllPath, "bin/RoburPseudoCommands.dll") | Out-Null
+    [System.IO.Compression.ZipFileExtensions]::CreateEntryFromFile($zip, $harmonyPath, "bin/0Harmony.dll") | Out-Null
+    [System.IO.Compression.ZipFileExtensions]::CreateEntryFromFile($zip, $harmonyLicensePath, "bin/Harmony-LICENSE.txt") | Out-Null
     [System.IO.Compression.ZipFileExtensions]::CreateEntryFromFile($zip, $aliasesPath, "bin/aliases.json") | Out-Null
     [System.IO.Compression.ZipFileExtensions]::CreateEntryFromFile($zip, $pluginPath, "plugins/RoburPseudoCommands.plugin") | Out-Null
 

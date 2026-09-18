@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Text;
+using System.Windows.Forms;
 using Topomatic.ApplicationPlatform;
 using Topomatic.ApplicationPlatform.Plugins;
 using Topomatic.Cad.View;
@@ -14,11 +15,31 @@ namespace RoburPseudoCommands
     public partial class Module : PluginInitializator
     {
         private static readonly AliasStore AliasStore = new AliasStore();
+        private static int _autoloadBroadcastObserved;
 
         public override void Initialize(PluginFactory factory)
         {
             base.Initialize(factory);
+            _activeCadViewProvider = () => CadView;
             LogLoaded();
+            InitializePolarPatch();
+            try
+            {
+                AnnotationBackgroundScalePatch.Enable();
+            }
+            catch (Exception ex)
+            {
+                Logger.Error("annotation background scale patch startup refused; original Robur behavior retained", ex);
+            }
+            try
+            {
+                EmergencyCommandRegistry.ScheduleCapture();
+            }
+            catch (Exception ex)
+            {
+                Logger.Error("failed to schedule emergency command snapshot", ex);
+            }
+
             try
             {
                 KeyInterceptor.Attach(() => CadView);
@@ -27,9 +48,7 @@ namespace RoburPseudoCommands
             {
                 Logger.Error("failed to attach keyboard message filter; plugin remains available without keyboard interception", ex);
             }
-            AliasCommandBootstrapper.Schedule();
         }
-
         [cmd("pseudo_command")]
         public void PseudoCommand()
         {
@@ -53,7 +72,7 @@ namespace RoburPseudoCommands
                 return;
 
             Logger.Info("pseudo_command alias='" + alias + "'");
-            ExecuteAlias(alias, false);
+            ExecuteAlias(alias, false, 0, "command");
         }
 
         [cmd("pseudo_reload_aliases")]
@@ -62,6 +81,7 @@ namespace RoburPseudoCommands
             try
             {
                 var count = AliasStore.Reload();
+                KeyInterceptor.ClearPopupRepeatHistory("aliases-reloaded");
                 Logger.Info("aliases reloaded count=" + count + " path='" + AliasStore.ActivePath + "'");
                 MessageDlg.Show(string.Format(
                     "Loaded {0} aliases from:{1}{2}",
@@ -79,15 +99,22 @@ namespace RoburPseudoCommands
         [cmd("pseudo_edit_aliases")]
         public void EditAliases()
         {
+            OpenAliasEditor(false);
+        }
+
+        private void OpenAliasEditor(bool focusPolar)
+        {
             try
             {
-                using (var form = new AliasEditorForm())
+                using (var form = new AliasEditorForm(() => CadView))
                 {
+                    if (focusPolar) form.FocusPolarOptions();
                     form.ShowDialog();
 
                     if (form.Saved)
                     {
                         var count = AliasStore.Reload();
+                        KeyInterceptor.ClearPopupRepeatHistory("aliases-reloaded-after-editor-save");
                         Logger.Info("aliases reloaded after editor save count=" + count + " path='" + AliasStore.ActivePath + "'");
                     }
                 }
@@ -190,13 +217,14 @@ namespace RoburPseudoCommands
             MessageDlg.Show(sb.ToString());
         }
 
-        [cmd("pseudo_alias_bootstrap")]
-        public void BootstrapAliases()
+
+        [cmd("pseudo_autoload")]
+        public void Autoload()
         {
-            if (!EnsureAliasesLoaded())
+            if (System.Threading.Interlocked.Exchange(ref _autoloadBroadcastObserved, 1) != 0)
                 return;
 
-            Logger.Info("alias bootstrap command executed aliasesCount=" + AliasStore.Aliases.Count);
+            Logger.Info("autoload assembly_loaded broadcast received");
         }
 
         private static bool EnsureAliasesLoaded()
@@ -214,16 +242,33 @@ namespace RoburPseudoCommands
             }
         }
 
-        internal static void ExecuteRegisteredAlias(string alias, bool forceExecute)
+        internal static bool ExecuteRegisteredAlias(string alias, bool forceExecute)
         {
-            if (!EnsureAliasesLoaded())
-                return;
+            return ExecuteRegisteredAlias(alias, forceExecute, 0, "command");
+        }
 
-            ExecuteAlias(alias, forceExecute);
+        internal static bool ExecuteRegisteredAlias(
+            string alias,
+            bool forceExecute,
+            long dispatchId,
+            string source)
+        {
+            if (IsAnnotationBackgroundScaleAlias(alias))
+                return ExecuteAnnotationBackgroundScaleAlias(dispatchId, source);
+            if (IsSafeSettingsAlias(alias))
+                return ExecuteSafeSettings(dispatchId, source);
+
+            if (!EnsureAliasesLoaded())
+                return false;
+
+            return ExecuteAlias(alias, forceExecute, dispatchId, source);
         }
 
         internal static bool IsKnownAlias(string alias)
         {
+            if (IsAnnotationBackgroundScaleAlias(alias) || IsSafeSettingsAlias(alias))
+                return true;
+
             if (!EnsureAliasesLoaded())
                 return false;
 
@@ -271,48 +316,104 @@ namespace RoburPseudoCommands
             return assembly.GetName().Version.ToString();
         }
 
-        private static void ExecuteAlias(string alias, bool forceExecute)
+        private static bool ExecuteAlias(string alias, bool forceExecute, long dispatchId, string source)
         {
+            if (IsAnnotationBackgroundScaleAlias(alias))
+                return ExecuteAnnotationBackgroundScaleAlias(dispatchId, source);
+            if (IsSafeSettingsAlias(alias))
+                return ExecuteSafeSettings(dispatchId, source);
+
             AliasEntry entry;
             if (!AliasStore.Aliases.TryGetValue(alias, out entry))
             {
-                Logger.Info("alias not found alias='" + alias + "' forceExecute=" + forceExecute);
-                MessageDlg.Show(string.Format("Alias '{0}' not found.", alias));
-                return;
+                Logger.Info("alias not found dispatchId=" + dispatchId + " alias='" + alias + "' forceExecute=" + forceExecute);
+                MessageBox.Show(string.Format("Alias '{0}' not found.", alias), "RoburPseudoCommands",
+                    MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return false;
             }
 
             var action = GetAction(entry);
+            var args = entry.Args == null ? new object[0] : entry.Args.Cast<object>().ToArray();
+
+            if (ProtectedCommandArguments.RequiresPackedHandler(entry.Command))
+            {
+                string protectedError;
+                Logger.Info("alias execute diagnostic dispatchId=" + dispatchId + " source=" +
+                    source + " route=safe-signature-direct alias='" + alias +
+                    "' command='" + entry.Command + "' args=" + args.Length);
+                var protectedResult = EmergencyCommandRegistry.TryExecute(entry.Command, args, out protectedError);
+                if (protectedResult == EmergencyExecutionResult.Cancelled ||
+                    protectedResult == EmergencyExecutionResult.Completed)
+                    return true;
+
+                MessageBox.Show(
+                    "Не удалось безопасно выполнить псевдокоманду '" + entry.Alias + "':" +
+                    Environment.NewLine + protectedError,
+                    "RoburPseudoCommands", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return false;
+            }
+
+            if (KeyInterceptor.IsEmergencyMode)
+            {
+                string emergencyError;
+                Logger.Info("alias execute diagnostic dispatchId=" + dispatchId + " source=" +
+                    source + " route=emergency-direct alias='" +
+                    alias + "' command='" + entry.Command + "' args=" + args.Length);
+                var emergencyResult = EmergencyCommandRegistry.TryExecute(entry.Command, args, out emergencyError);
+                if (emergencyResult == EmergencyExecutionResult.Cancelled ||
+                    emergencyResult == EmergencyExecutionResult.Completed)
+                    return true;
+
+                var emergencyRecovery = emergencyResult == EmergencyExecutionResult.RegistryFailure
+                    ? Environment.NewLine + Environment.NewLine +
+                      "Сохранённый обработчик повреждён; требуется перезапуск Robur."
+                    : string.Empty;
+                MessageBox.Show(
+                    "Не удалось выполнить псевдокоманду '" + entry.Alias + "' напрямую:" +
+                    Environment.NewLine + emergencyError + emergencyRecovery,
+                    "Аварийный запуск", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return false;
+            }
+
             try
             {
-                var argsCount = entry.Args == null ? 0 : entry.Args.Count;
-                if (!forceExecute && !string.IsNullOrEmpty(action) && argsCount == 0)
-                {
-                    Logger.Info("alias invokeAction alias='" + alias + "' action='" + action + "' command='" + entry.Command + "'");
-                    ApplicationHost.Current.Plugins.InvokeAction(action, string.Empty);
-                    return;
-                }
-
-                var args = entry.Args == null
-                    ? new object[0]
-                    : entry.Args.Cast<object>().ToArray();
-
-                Logger.Info("alias execute alias='" + alias + "' command='" + entry.Command + "' args=" + args.Length + " forceExecute=" + forceExecute);
+                Logger.Info("alias execute diagnostic dispatchId=" + dispatchId + " source=" +
+                    source + " route=command alias='" + alias +
+                    "' command='" + entry.Command + "' action='" + action + "' args=" +
+                    args.Length + " forceExecute=" + forceExecute);
                 ApplicationHost.Current.Plugins.Execute(entry.Command, args);
+                return true;
             }
             catch (Exception ex)
             {
+                if (EmergencyCommandRegistry.IsCancellation(ex))
+                {
+                    Logger.Info("alias dispatch cancelled dispatchId=" + dispatchId + " alias='" +
+                        entry.Alias + "' command='" + entry.Command + "'");
+                    return true;
+                }
+
                 Logger.Error(
-                    "failed alias='" + entry.Alias + "' target='" + (string.IsNullOrEmpty(action) ? entry.Command : action) + "' forceExecute=" + forceExecute,
-                    ex);
-                MessageDlg.Show(string.Format(
-                    "Failed to execute alias '{0}' -> '{1}':{2}{3}",
-                    entry.Alias,
-                    string.IsNullOrEmpty(action) ? entry.Command : action,
-                    Environment.NewLine,
-                    ex.Message));
+                    "failed dispatchId=" + dispatchId + " alias='" + entry.Alias + "' target='" +
+                    (string.IsNullOrEmpty(action) ? entry.Command : action) +
+                    "' forceExecute=" + forceExecute, ex);
+                KeyInterceptor.NotifyCommandFailure(ex);
+
+                var recovery = EmergencyCommandRegistry.IsRegistryFailure(ex)
+                    ? Environment.NewLine + Environment.NewLine +
+                      "Включён аварийный режим. Повторите команду; Ctrl+Shift+F12 открывает палитру."
+                    : string.Empty;
+                MessageBox.Show(
+                    string.Format("Failed to execute alias '{0}' -> '{1}':{2}{3}{4}",
+                        entry.Alias,
+                        string.IsNullOrEmpty(action) ? entry.Command : action,
+                        Environment.NewLine,
+                        ex.Message,
+                        recovery),
+                    "RoburPseudoCommands", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return false;
             }
         }
-
         private static string GetAction(AliasEntry entry)
         {
             if (!string.IsNullOrEmpty(entry.Action))

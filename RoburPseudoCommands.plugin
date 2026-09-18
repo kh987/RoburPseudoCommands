@@ -4,6 +4,9 @@
       "assembly": "RoburPseudoCommands.dll, RoburPseudoCommands.ModulePluginHost"
     }
   },
+  "broadcasts": {
+    "assembly_loaded": "pseudo_autoload"
+  },
   "actions": {
     "id_pseudo_command": {
       "cmd": "pseudo_command",
@@ -20,6 +23,31 @@
       "title": "Псевдокоманды...",
       "description": "Настройка псевдокоманд Robur",
       "icon": "ic_robur_pseudo_commands"
+    },
+    "id_pseudo_annotation_background_scale": {
+      "cmd": "pseudo_annotation_background_scale",
+      "title": "Коэффициент фона аннотаций...",
+      "description": "Изменить коэффициент перекрытия фона выбранных мультивыносок Robur; алиас: кф"
+    },
+    "id_pseudo_safe_application_settings": {
+      "cmd": "pseudo_safe_application_settings",
+      "title": "Настройки Robur (безопасный запуск)",
+      "description": "Открыть настройки Robur через сохранённый обработчик; алиас: нс"
+    },
+    "id_pseudo_polar_diagnostics": {
+      "cmd": "pseudo_polar_diagnostics",
+      "title": "Полярная диагностика (устаревшая команда)",
+      "description": "Совместимость со старым вызовом; временная трассировка удалена из сборки"
+    },
+    "id_pseudo_polar_patch": {
+      "cmd": "pseudo_polar_patch",
+      "title": "Полярное отслеживание: заплатка...",
+      "description": "Открыть полярные настройки в окне Псевдокоманды"
+    },
+    "id_pseudo_polar_rotation": {
+      "cmd": "pseudo_polar_rotation",
+      "title": "Полярное отслеживание: поворот пространства...",
+      "description": "Открыть полярные настройки в окне Псевдокоманды"
     },
     "id_pseudo_show_log": {
       "cmd": "pseudo_show_log",

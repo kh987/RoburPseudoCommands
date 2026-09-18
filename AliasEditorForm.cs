@@ -9,7 +9,7 @@ using System.Windows.Forms;
 
 namespace RoburPseudoCommands
 {
-    internal sealed class AliasEditorForm : Form
+    internal sealed partial class AliasEditorForm : Form
     {
         private const string ColAlias = "Alias";
         private const string ColAction = "Action";
@@ -25,12 +25,14 @@ namespace RoburPseudoCommands
         private readonly CheckBox _logEnabledCheckBox;
         private readonly CheckBox _quickInputEnabledCheckBox;
         private readonly CheckBox _spaceActsAsEnterCheckBox;
+        private readonly CheckBox _safeDeleteUndoEnabledCheckBox;
         private readonly CheckBox _advancedCheckBox;
         private readonly Label _summaryLabel;
         private readonly ToolTip _toolTip;
 
-        public AliasEditorForm()
+        public AliasEditorForm(Func<Topomatic.Cad.View.CadView> viewProvider = null)
         {
+            _viewProvider = viewProvider ?? (() => null);
             Text = "Псевдокоманды";
             StartPosition = FormStartPosition.CenterScreen;
             AutoScaleMode = AutoScaleMode.Dpi;
@@ -45,6 +47,7 @@ namespace RoburPseudoCommands
             _logEnabledCheckBox = new CheckBox();
             _quickInputEnabledCheckBox = new CheckBox();
             _spaceActsAsEnterCheckBox = new CheckBox();
+            _safeDeleteUndoEnabledCheckBox = new CheckBox();
             _advancedCheckBox = new CheckBox();
             _summaryLabel = new Label();
             _toolTip = new ToolTip();
@@ -63,9 +66,10 @@ namespace RoburPseudoCommands
             {
                 Dock = DockStyle.Fill,
                 ColumnCount = 1,
-                RowCount = 5,
+                RowCount = 6,
                 Padding = new Padding(12)
             };
+            root.RowStyles.Add(new RowStyle(SizeType.AutoSize));
             root.RowStyles.Add(new RowStyle(SizeType.AutoSize));
             root.RowStyles.Add(new RowStyle(SizeType.AutoSize));
             root.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
@@ -153,7 +157,7 @@ namespace RoburPseudoCommands
             _quickInputEnabledCheckBox.CheckedChanged += delegate { SaveKeyboardInputSettings(); };
             _toolTip.SetToolTip(
                 _quickInputEnabledCheckBox,
-                "Открывать собственный ввод псевдокоманд у курсора. Enter и Space подтверждают ввод. По умолчанию включено.");
+                "Открывать собственный ввод псевдокоманд у курсора.");
             inputOptions.Controls.Add(_quickInputEnabledCheckBox);
 
             _spaceActsAsEnterCheckBox.Text = "Space действует как Enter";
@@ -163,9 +167,21 @@ namespace RoburPseudoCommands
             _spaceActsAsEnterCheckBox.CheckedChanged += delegate { SaveKeyboardInputSettings(); };
             _toolTip.SetToolTip(
                 _spaceActsAsEnterCheckBox,
-                "Передавать Space в Robur как штатный Enter: повторять, подтверждать и завершать команды. По умолчанию включено.");
+                "Передавать Space в Robur как штатный Enter: повторять последнюю команду и подтверждать дополнительные запросы.");
             inputOptions.Controls.Add(_spaceActsAsEnterCheckBox);
+
+            _safeDeleteUndoEnabledCheckBox.Text = "Безопасный маршрут редактирования и служебных окон";
+            _safeDeleteUndoEnabledCheckBox.AutoSize = true;
+            _safeDeleteUndoEnabledCheckBox.Margin = new Padding(18, 3, 0, 3);
+            _safeDeleteUndoEnabledCheckBox.Checked = PluginSettings.IsSafeDeleteUndoEnabled();
+            _safeDeleteUndoEnabledCheckBox.CheckedChanged += delegate { SaveKeyboardInputSettings(); };
+            _toolTip.SetToolTip(
+                _safeDeleteUndoEnabledCheckBox,
+                "Запускать защищённые клавиши, «Режимы рисования» и служебные окна из меню напрямую через сохранённые обработчики.");
+            inputOptions.Controls.Add(_safeDeleteUndoEnabledCheckBox);
+
             root.Controls.Add(inputOptions, 0, 1);
+            root.Controls.Add(BuildPolarOptions(), 0, 2);
 
             _bindingSource.DataSource = _table;
             _grid.AllowUserToAddRows = false;
@@ -184,12 +200,12 @@ namespace RoburPseudoCommands
             _grid.DataError += delegate(object sender, DataGridViewDataErrorEventArgs e) { e.ThrowException = false; };
             AddColumns();
             UpdateAdvancedMode();
-            root.Controls.Add(_grid, 0, 2);
+            root.Controls.Add(_grid, 0, 3);
 
             _summaryLabel.AutoSize = true;
             _summaryLabel.Dock = DockStyle.Fill;
             _summaryLabel.Padding = new Padding(0, 6, 0, 6);
-            root.Controls.Add(_summaryLabel, 0, 3);
+            root.Controls.Add(_summaryLabel, 0, 4);
 
             var buttons = new FlowLayoutPanel
             {
@@ -216,7 +232,7 @@ namespace RoburPseudoCommands
                 Padding = new Padding(0, 8, 12, 0),
                 Margin = new Padding(4)
             });
-            root.Controls.Add(buttons, 0, 4);
+            root.Controls.Add(buttons, 0, 5);
         }
 
         private Button CreateButton(string text, Action action, string toolTipText)
@@ -257,7 +273,8 @@ namespace RoburPseudoCommands
             {
                 PluginSettings.SetKeyboardInputOptions(
                     _quickInputEnabledCheckBox.Checked,
-                    _spaceActsAsEnterCheckBox.Checked);
+                    _spaceActsAsEnterCheckBox.Checked,
+                    _safeDeleteUndoEnabledCheckBox.Checked);
             }
             catch (Exception ex)
             {
@@ -282,6 +299,7 @@ namespace RoburPseudoCommands
 
         private void UpdateAdvancedMode()
         {
+            _logEnabledCheckBox.Visible = _advancedCheckBox.Checked;
             SetColumnVisible(ColAction, _advancedCheckBox.Checked);
             SetColumnVisible(ColArgs, _advancedCheckBox.Checked);
         }
@@ -509,21 +527,15 @@ namespace RoburPseudoCommands
                 return;
             }
 
-            var restartRequired = IsRestartRequired(entries);
             AliasStore.SaveEntries(entries);
             Saved = true;
-            var cacheCleared = !restartRequired;
-            string cacheClearError;
-            if (restartRequired)
-                cacheCleared = RoburCommandCache.TryClear(out cacheClearError);
-
-            Logger.Info("alias editor saved aliases count=" + entries.Count + " path='" + AliasStore.GetConfigPath() + "' restartRequired=" + restartRequired + " cacheCleared=" + cacheCleared);
-
-            var message = restartRequired
-                ? "Сохранено. Новые, удаленные или переименованные псевдокоманды начнут работать после перезапуска Robur."
-                : "Сохранено. Для уже активных псевдокоманд изменения назначений применены в active config; если Robur еще держит старое назначение, выполните pseudo_reload_aliases или перезапустите Robur.";
-
-            MessageBox.Show(this, message, "Псевдокоманды", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            Logger.Info("alias editor saved popup-only aliases count=" + entries.Count + " path='" + AliasStore.GetConfigPath() + "'");
+            MessageBox.Show(
+                this,
+                "Сохранено. Псевдокоманды доступны в QuickInput сразу, без регистрации в command layer и без перезапуска Robur.",
+                "Псевдокоманды",
+                MessageBoxButtons.OK,
+                MessageBoxIcon.Information);
             RefreshStatuses();
             _table.AcceptChanges();
         }
@@ -652,7 +664,8 @@ namespace RoburPseudoCommands
             text.AppendLine("RoburPseudoCommands");
             text.AppendLine();
             text.AppendLine("Версия: " + GetPluginVersion());
-            text.AppendLine("Стадия: Stable / 0.7.0");
+            text.AppendLine("Стадия: Dev / 0.8.0-dev.8 (MapsLeader background restore)");
+            text.AppendLine(PolarOptions.Status());
             text.AppendLine();
             text.AppendLine("DLL:");
             text.AppendLine(assembly.Location);
@@ -668,7 +681,14 @@ namespace RoburPseudoCommands
             text.AppendLine(PluginSettings.SettingsPath);
             text.AppendLine("QuickInput: " + (PluginSettings.IsQuickInputEnabled() ? "Включен" : "Отключен"));
             text.AppendLine("Space как Enter: " + (PluginSettings.IsSpaceActsAsEnterEnabled() ? "Включен" : "Отключен"));
+            text.AppendLine("Безопасный маршрут редактирования и служебных окон: " +
+                (PluginSettings.IsSafeDeleteUndoEnabled() ? "Включен" : "Отключен"));
+            text.AppendLine("Aliases: только QuickInput, без динамической регистрации команд");
             text.AppendLine("Message filter: " + (KeyInterceptor.IsAttached ? "Подключен" : "Отключен"));
+            text.AppendLine("Аварийный режим: " + (KeyInterceptor.IsEmergencyMode ? "Активен до перезапуска" : "Не активен"));
+            text.AppendLine("Безопасный снимок: " + EmergencyCommandRegistry.Count + " команд; " +
+                (EmergencyCommandRegistry.IsCaptureComplete ? "готов" : "формируется"));
+            text.AppendLine("Аварийная палитра: Ctrl+Shift+F12");
             text.AppendLine();
             text.AppendLine("Aliases в таблице: " + CountVisibleRows());
 
@@ -725,14 +745,12 @@ namespace RoburPseudoCommands
                 .Cast<DataRow>()
                 .Where(x => x.RowState != DataRowState.Deleted)
                 .ToList();
-            var active = rows.Count(x => GetCell(x, ColStatus) == "Активна сейчас");
-            var restart = rows.Count(x => IsRestartStatus(GetCell(x, ColStatus)));
+            var active = rows.Count(x => GetCell(x, ColStatus) == "Доступна в QuickInput");
             var invalid = rows.Count(x => IsInvalidStatus(GetCell(x, ColStatus)));
             _summaryLabel.Text = string.Format(
-                "Всего: {0}; активны сейчас: {1}; нужен перезапуск Robur: {2}; ошибок: {3}",
+                "Всего: {0}; доступны в QuickInput: {1}; ошибок: {2}",
                 rows.Count,
                 active,
-                restart,
                 invalid);
         }
 
@@ -757,9 +775,7 @@ namespace RoburPseudoCommands
             if (string.IsNullOrEmpty(command))
                 return "Нет команды";
 
-            return DynamicAliasCommandFactory.IsRegistered(alias)
-                ? "Активна сейчас"
-                : "Новая: после сохранения перезапустите Robur";
+            return "Доступна в QuickInput";
         }
 
         private List<string> GetValidationErrors()
@@ -785,12 +801,7 @@ namespace RoburPseudoCommands
 
         private static bool IsInvalidStatus(string status)
         {
-            return status != "Активна сейчас" && !IsRestartStatus(status);
-        }
-
-        private static bool IsRestartStatus(string status)
-        {
-            return (status ?? string.Empty).IndexOf("перезапустите Robur", StringComparison.OrdinalIgnoreCase) >= 0;
+            return status != "Доступна в QuickInput";
         }
 
         private List<AliasEntry> BuildEntries()
@@ -816,20 +827,6 @@ namespace RoburPseudoCommands
             }
 
             return entries;
-        }
-
-        private bool IsRestartRequired(IList<AliasEntry> entries)
-        {
-            var current = new HashSet<string>(
-                entries.Select(x => x.Alias),
-                StringComparer.OrdinalIgnoreCase);
-
-            if (current.Any(x => !DynamicAliasCommandFactory.IsRegistered(x)))
-                return true;
-
-            return DynamicAliasCommandFactory
-                .GetRegisteredAliases()
-                .Any(x => !current.Contains(x));
         }
 
         private void ApplyFilter()

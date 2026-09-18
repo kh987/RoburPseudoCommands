@@ -9,6 +9,7 @@ namespace RoburPseudoCommands
         private readonly Func<string, bool> _isKnownAlias;
         private readonly TextBox _input;
         private readonly Label _status;
+        private bool _acceptStarted;
 
         public QuickInputForm(string initialText, Func<string, bool> isKnownAlias)
         {
@@ -54,7 +55,7 @@ namespace RoburPseudoCommands
             };
         }
 
-        public string AcceptedAlias { get; private set; }
+        public event Action<string> AliasAccepted;
 
         private void InputKeyDown(object sender, KeyEventArgs e)
         {
@@ -82,8 +83,15 @@ namespace RoburPseudoCommands
                 return;
             }
 
-            AcceptedAlias = alias;
+            if (_acceptStarted)
+                return;
+
+            _acceptStarted = true;
+            var accepted = AliasAccepted;
             Close();
+
+            if (accepted != null)
+                accepted(alias);
         }
 
         private void ClearStatus()
