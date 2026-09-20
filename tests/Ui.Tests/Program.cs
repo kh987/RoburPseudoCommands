@@ -77,38 +77,6 @@ internal static class Program
                 "parameterless handler retained " + command);
             Check(ReferenceEquals(unchanged, original), "command arguments unchanged " + command);
         }
-
-        var method = T("KeyInterceptor").GetMethod("TryGetProtectedMenuCommand", Flags);
-        var mappings = new[] {
-            new[] { "core.id_drafting_settings", "dsettings" },
-            new[] { "core.id_point_sign_library", "point_sign_library" },
-            new[] { "id_linear_sign_library", "linear_sign_library" },
-            new[] { "id_area_sign_library", "area_sign_library" },
-            new[] { "visualization.id_models_library", "models_library" },
-            new[] { "id_smt_manager", "smt_manager" },
-            new[] { "id_smdx_manager", "smdx_manager" },
-            new[] { "id_materials_settings_manager", "materials_settings_manager" },
-            new[] { "id_application_settings", "options" },
-            new[] { "id_toolbar_settings", "toolbar_settings" }
-        };
-        foreach (var mapping in mappings)
-        {
-            var args = new object[] { new ToolStripMenuItem { Name = mapping[0], Text = "unrelated" }, null };
-            Check((bool)method.Invoke(null, args) && (string)args[1] == mapping[1], "protected menu id " + mapping[0]);
-            var commandArgs = new object[] { new ToolStripMenuItem { Name = mapping[1] }, null };
-            Check((bool)method.Invoke(null, commandArgs) && (string)commandArgs[1] == mapping[1], "protected command id " + mapping[1]);
-        }
-        foreach (var title in new[] { "Библиотека 3D-моделей", "Менеджер структуры Smdx…" })
-        {
-            var args = new object[] { new ToolStripMenuItem(title), null };
-            Check((bool)method.Invoke(null, args), "protected menu title " + title);
-        }
-        var tagArgs = new object[] { new ToolStripMenuItem { Tag = "core.id_application_settings" }, null };
-        Check((bool)method.Invoke(null, tagArgs) && (string)tagArgs[1] == "options", "protected menu tag");
-        var unrelatedArgs = new object[] { new ToolStripMenuItem("Настройки слоя...") { Name = "id_sfc_layer_settings" }, null };
-        Check(!(bool)method.Invoke(null, unrelatedArgs) && unrelatedArgs[1] == null, "unrelated menu untouched");
-        var genericSettingsArgs = new object[] { new ToolStripMenuItem("Настройка..."), null };
-        Check(!(bool)method.Invoke(null, genericSettingsArgs), "generic settings title not intercepted");
     }
     private static void TestAnnotationBackgroundScale()
     {

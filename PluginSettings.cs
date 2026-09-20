@@ -61,22 +61,15 @@ namespace RoburPseudoCommands
             lock (SyncRoot) return GetSettings().SpaceActsAsEnter;
         }
 
-        public static bool IsSafeDeleteUndoEnabled()
-        {
-            lock (SyncRoot) return GetSettings().SafeDeleteUndoEnabled;
-        }
-
         public static void SetKeyboardInputOptions(
             bool quickInputEnabled,
-            bool spaceActsAsEnter,
-            bool safeDeleteUndoEnabled)
+            bool spaceActsAsEnter)
         {
             lock (SyncRoot)
             {
                 var settings = GetSettings();
                 settings.QuickInputEnabled = quickInputEnabled;
                 settings.SpaceActsAsEnter = spaceActsAsEnter;
-                settings.SafeDeleteUndoEnabled = safeDeleteUndoEnabled;
                 Save(settings);
             }
         }
@@ -123,9 +116,6 @@ namespace RoburPseudoCommands
             text.Append("  \"spaceActsAsEnter\": ");
             text.Append(settings.SpaceActsAsEnter ? "true" : "false");
             text.AppendLine(",");
-            text.Append("  \"safeDeleteUndoEnabled\": ");
-            text.Append(settings.SafeDeleteUndoEnabled ? "true" : "false");
-            text.AppendLine(",");
             text.Append("  \"annotationBackgroundScale\": ");
             text.Append(settings.AnnotationBackgroundScale.ToString("R", CultureInfo.InvariantCulture));
             text.AppendLine();
@@ -145,7 +135,6 @@ namespace RoburPseudoCommands
     {
         private bool? _quickInputEnabled;
         private bool? _spaceActsAsEnter;
-        private bool? _safeDeleteUndoEnabled;
         private double? _annotationBackgroundScale;
 
         [DataMember(Name = "logEnabled")]
@@ -199,27 +188,12 @@ namespace RoburPseudoCommands
             set { _spaceActsAsEnter = value; }
         }
 
-        [DataMember(Name = "safeDeleteUndoEnabled", EmitDefaultValue = false)]
-        private bool? SafeDeleteUndoEnabledValue
-        {
-            get { return _safeDeleteUndoEnabled; }
-            set { _safeDeleteUndoEnabled = value; }
-        }
-
-        [IgnoreDataMember]
-        public bool SafeDeleteUndoEnabled
-        {
-            get { return _safeDeleteUndoEnabled ?? true; }
-            set { _safeDeleteUndoEnabled = value; }
-        }
-
         public static PluginSettingsData CreateFailSafe()
         {
             return new PluginSettingsData
             {
                 QuickInputEnabled = false,
-                SpaceActsAsEnter = false,
-                SafeDeleteUndoEnabled = false
+                SpaceActsAsEnter = false
             };
         }
     }

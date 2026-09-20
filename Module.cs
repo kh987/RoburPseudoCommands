@@ -36,7 +36,7 @@ namespace RoburPseudoCommands
             }
             catch (Exception ex)
             {
-                Logger.Error("failed to schedule emergency command snapshot", ex);
+                Logger.Error("failed to schedule command snapshot", ex);
             }
 
             try

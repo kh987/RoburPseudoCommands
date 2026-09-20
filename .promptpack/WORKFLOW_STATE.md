@@ -2,7 +2,7 @@
 
 Plugin: RoburPseudoCommands
 Cycle ID: 2026-09-02-feature-v0.8.0
-Updated: 2026-09-20 12:05
+Updated: 2026-09-20 12:11
 State path: D:\Codex\RoburPseudoCommands\.promptpack\WORKFLOW_STATE.md
 
 ## Lifecycle
@@ -19,7 +19,7 @@ Test level: extended
 P2 status: approved
 Draft revision: n/a
 Draft status: n/a
-Current step: S4.2 (delta preflight после завершённого S4.1)
+Current step: S5 (delta preflight после завершённого S4.2 / родительский S4 завершён)
 Status: in-progress
 Execution mode: automatic-dev — поручение пользователя 2026-09-20 продолжать утверждённый Dev-cycle автоматически. Граница: подшаги S3.1, S3.2, S4.1, S4.2, S5 и подготовка артефакта/сценария S6 внутри Cycle 2026-09-02-feature-v0.8.0. Остановки: подготовка host-проверки S6 (awaiting-user), lifecycle-gate Dev → Debug (без CHECK/APPLY), BLOCKED. Вне границы: установка/запуск Robur, синхронизация карточки/README, проекты будущих плагинов.
 
@@ -28,16 +28,16 @@ SYSTEM_UI.md: read — фактическое чтение, Prompt Pack SMB (с�
 SYSTEM_GEOMETRY.md: read — фактическое чтение, Prompt Pack SMB (сессии 2026-09-18/2026-09-20)
 
 ## Evidence
-Build: passed — S3–S4.1: Release 0/0 против Robur Genplan 16.0
+Build: passed — S3–S4.2: Release 0/0 против Robur Genplan 16.0
 Deploy: passed — чистая установка dev.8.tpm на reproduction PC (2026-09-18); станет stale после S5
 Runtime: passed — acceptance dev.8 на 16.0.62.12 (2026-09-18); станет stale после S5, перенос через S6
-UI: passed — Ui.Tests PASS checks=75 после S4.1 (94 → 76 S3 → 75 S4.1, −1 built-in нс)
+UI: passed — Ui.Tests PASS checks=50 после S4.2 (94 → 76 → 75 → 50)
 Geometry: passed — визуальная проверка маски в acceptance dev.8; повтор через S6
 Docs: pending — карточка/README отражают v0.7.0; синхронизация до Debug → Stabilization
 
 ## Cursor
-Last completed action: S4.1 завершён (12:05): нс/IsSafeSettingsAlias/ExecuteSafeSettings удалены, emergency-ветка диспетчера удалена, NotifyCommandFailure/IsRegistryFailure-текст убраны из ExecuteAlias, ProtectedCommandArguments/TryExecute/IsCancellation сохранены, SafeSettingsCommand.cs = только ProtectedCommandArguments, .plugin 5 actions; build 0/0; Ui.Tests PASS 75
-Next action: automatic-dev — S4.2: input/UI/settings surface (KeyInterceptor без emergency/protected, EmergencyCommandForm удалён, registry slim, safeDeleteUndo удалён из PluginSettings/AliasEditorForm)
+Last completed action: S4.2 завершён (12:11): KeyInterceptor без emergency/protected-веток (ядро QuickInput/Space/repeat сохранено), EmergencyCommandForm удалён, registry slim (TryExecute/IsCancellation/Count/Capture), safeDeleteUndo удалён из PluginSettings/AliasEditorForm, About без аварийных строк; build 0/0; Ui.Tests PASS 50; grep: только идентификаторы snapshot-ядра (P1-1)
+Next action: automatic-dev — S5: удалить built-in alias кф, .plugin description без «алиас: кф», версия 0.8.0-dev.9, сборка и проверка TPM
 
 ## Open blockers
 - none

@@ -14,7 +14,6 @@ namespace RoburPseudoCommands
         Completed,
         Cancelled,
         NotAvailable,
-        RegistryFailure,
         Failed
     }
 
@@ -29,21 +28,15 @@ namespace RoburPseudoCommands
         private static bool _captureComplete;
 
         public static int Count { get { lock (SyncRoot) return Snapshot.Count; } }
-        public static bool IsCaptureComplete { get { lock (SyncRoot) return _captureComplete; } }
 
         public static void ScheduleCapture()
         {
             CaptureSample();
             if (_captureTimer != null) return;
             _captureTimer = new Timer { Interval = 250 };
-            _captureTimer.Tick += delegate { try { CaptureSample(); } catch (Exception ex) { Logger.Error("emergency command snapshot sample failed", ex); } };
+            _captureTimer.Tick += delegate { try { CaptureSample(); } catch (Exception ex) { Logger.Error("command snapshot sample failed", ex); } };
             _captureTimer.Start();
-            Logger.Info("emergency command snapshot scheduled");
-        }
-
-        public static string[] GetCommandNames()
-        {
-            lock (SyncRoot) return Snapshot.Keys.OrderBy(x => x, StringComparer.OrdinalIgnoreCase).ToArray();
+            Logger.Info("command snapshot scheduled");
         }
 
         public static EmergencyExecutionResult TryExecute(string command, object[] args, out string error)
@@ -54,14 +47,14 @@ namespace RoburPseudoCommands
             if (function == null)
             {
                 error = "Команда '" + command + "' отсутствует в безопасном снимке.";
-                Logger.Info("emergency execute rejected command='" + command + "' reason=not-in-snapshot snapshotCount=" + Count);
+                Logger.Info("snapshot execute rejected command='" + command + "' reason=not-in-snapshot snapshotCount=" + Count);
                 return EmergencyExecutionResult.NotAvailable;
             }
 
             try
             {
                 var invocationArguments = ProtectedCommandArguments.Build(command, args);
-                Logger.Info("emergency execute command='" + command + "' commandArgs=" +
+                Logger.Info("snapshot execute command='" + command + "' commandArgs=" +
                     (args == null ? 0 : args.Length) + " invocationArgs=" + invocationArguments.Length);
                 function.Execute(invocationArguments);
                 error = string.Empty;
@@ -72,14 +65,12 @@ namespace RoburPseudoCommands
                 error = GetInnermostMessage(ex);
                 if (IsCancellation(ex))
                 {
-                    Logger.Info("emergency direct handler cancelled command='" + command + "' reason='" + error + "'");
+                    Logger.Info("snapshot direct handler cancelled command='" + command + "' reason='" + error + "'");
                     return EmergencyExecutionResult.Cancelled;
                 }
 
-                Logger.Error("emergency direct handler failed command='" + command + "'", ex);
-                return IsRegistryFailure(ex)
-                    ? EmergencyExecutionResult.RegistryFailure
-                    : EmergencyExecutionResult.Failed;
+                Logger.Error("direct handler failed command='" + command + "'", ex);
+                return EmergencyExecutionResult.Failed;
             }
         }
 
@@ -87,12 +78,6 @@ namespace RoburPseudoCommands
         {
             for (var current = exception; current != null; current = current.InnerException)
                 if (current is OperationCanceledException) return true;
-            return false;
-        }
-        public static bool IsRegistryFailure(Exception exception)
-        {
-            for (var current = exception; current != null; current = current.InnerException)
-                if (current is KeyNotFoundException || current is TargetParameterCountException) return true;
             return false;
         }
 
@@ -127,8 +112,8 @@ namespace RoburPseudoCommands
                 }
             }
 
-            if (added > 0 || IsCaptureComplete)
-                Logger.Info("emergency command snapshot sample source='" + source + "' liveCount=" + live.Count + " added=" + added + " snapshotCount=" + Count + " complete=" + IsCaptureComplete);
+            if (added > 0 || _captureComplete)
+                Logger.Info("command snapshot sample source='" + source + "' liveCount=" + live.Count + " added=" + added + " snapshotCount=" + Count + " complete=" + _captureComplete);
         }
 
         private static bool TryReadLargestRegistry(out Dictionary<string, PluginFunction> registry, out string source)

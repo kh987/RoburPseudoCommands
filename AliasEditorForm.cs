@@ -25,7 +25,6 @@ namespace RoburPseudoCommands
         private readonly CheckBox _logEnabledCheckBox;
         private readonly CheckBox _quickInputEnabledCheckBox;
         private readonly CheckBox _spaceActsAsEnterCheckBox;
-        private readonly CheckBox _safeDeleteUndoEnabledCheckBox;
         private readonly CheckBox _advancedCheckBox;
         private readonly Label _summaryLabel;
         private readonly ToolTip _toolTip;
@@ -46,7 +45,6 @@ namespace RoburPseudoCommands
             _logEnabledCheckBox = new CheckBox();
             _quickInputEnabledCheckBox = new CheckBox();
             _spaceActsAsEnterCheckBox = new CheckBox();
-            _safeDeleteUndoEnabledCheckBox = new CheckBox();
             _advancedCheckBox = new CheckBox();
             _summaryLabel = new Label();
             _toolTip = new ToolTip();
@@ -168,16 +166,6 @@ namespace RoburPseudoCommands
                 "Передавать Space в Robur как штатный Enter: повторять последнюю команду и подтверждать дополнительные запросы.");
             inputOptions.Controls.Add(_spaceActsAsEnterCheckBox);
 
-            _safeDeleteUndoEnabledCheckBox.Text = "Безопасный маршрут редактирования и служебных окон";
-            _safeDeleteUndoEnabledCheckBox.AutoSize = true;
-            _safeDeleteUndoEnabledCheckBox.Margin = new Padding(18, 3, 0, 3);
-            _safeDeleteUndoEnabledCheckBox.Checked = PluginSettings.IsSafeDeleteUndoEnabled();
-            _safeDeleteUndoEnabledCheckBox.CheckedChanged += delegate { SaveKeyboardInputSettings(); };
-            _toolTip.SetToolTip(
-                _safeDeleteUndoEnabledCheckBox,
-                "Запускать защищённые клавиши, «Режимы рисования» и служебные окна из меню напрямую через сохранённые обработчики.");
-            inputOptions.Controls.Add(_safeDeleteUndoEnabledCheckBox);
-
             root.Controls.Add(inputOptions, 0, 1);
 
             _bindingSource.DataSource = _table;
@@ -270,8 +258,7 @@ namespace RoburPseudoCommands
             {
                 PluginSettings.SetKeyboardInputOptions(
                     _quickInputEnabledCheckBox.Checked,
-                    _spaceActsAsEnterCheckBox.Checked,
-                    _safeDeleteUndoEnabledCheckBox.Checked);
+                    _spaceActsAsEnterCheckBox.Checked);
             }
             catch (Exception ex)
             {
@@ -677,14 +664,8 @@ namespace RoburPseudoCommands
             text.AppendLine(PluginSettings.SettingsPath);
             text.AppendLine("QuickInput: " + (PluginSettings.IsQuickInputEnabled() ? "Включен" : "Отключен"));
             text.AppendLine("Space как Enter: " + (PluginSettings.IsSpaceActsAsEnterEnabled() ? "Включен" : "Отключен"));
-            text.AppendLine("Безопасный маршрут редактирования и служебных окон: " +
-                (PluginSettings.IsSafeDeleteUndoEnabled() ? "Включен" : "Отключен"));
             text.AppendLine("Aliases: только QuickInput, без динамической регистрации команд");
             text.AppendLine("Message filter: " + (KeyInterceptor.IsAttached ? "Подключен" : "Отключен"));
-            text.AppendLine("Аварийный режим: " + (KeyInterceptor.IsEmergencyMode ? "Активен до перезапуска" : "Не активен"));
-            text.AppendLine("Безопасный снимок: " + EmergencyCommandRegistry.Count + " команд; " +
-                (EmergencyCommandRegistry.IsCaptureComplete ? "готов" : "формируется"));
-            text.AppendLine("Аварийная палитра: Ctrl+Shift+F12");
             text.AppendLine();
             text.AppendLine("Aliases в таблице: " + CountVisibleRows());
 
