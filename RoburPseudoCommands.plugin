@@ -27,7 +27,7 @@
     "id_pseudo_annotation_background_scale": {
       "cmd": "pseudo_annotation_background_scale",
       "title": "Коэффициент фона аннотаций...",
-      "description": "Изменить коэффициент перекрытия фона выбранных мультивыносок Robur; алиас: кф"
+      "description": "Изменить коэффициент перекрытия фона выбранных мультивыносок Robur"
     },
     "id_pseudo_show_log": {
       "cmd": "pseudo_show_log",

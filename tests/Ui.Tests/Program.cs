@@ -91,9 +91,6 @@ internal static class Program
         Check(Math.Abs((double)Call("PluginSettings", "GetAnnotationBackgroundScale") - 1.25) < 1e-9,
             "annotation scale persists");
 
-        var known = T("Module").GetMethod("IsKnownAlias", Flags);
-        Check((bool)known.Invoke(null, new object[] { " КФ " }), "built-in annotation alias");
-
         Call("AnnotationBackgroundScalePatch", "Enable");
         Check((bool)T("AnnotationBackgroundScalePatch").GetProperty("Enabled", Flags).GetValue(null),
             "annotation layout patch enabled");

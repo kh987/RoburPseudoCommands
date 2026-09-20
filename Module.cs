@@ -20,7 +20,6 @@ namespace RoburPseudoCommands
         public override void Initialize(PluginFactory factory)
         {
             base.Initialize(factory);
-            _activeCadViewProvider = () => CadView;
             LogLoaded();
             try
             {
@@ -251,9 +250,6 @@ namespace RoburPseudoCommands
             long dispatchId,
             string source)
         {
-            if (IsAnnotationBackgroundScaleAlias(alias))
-                return ExecuteAnnotationBackgroundScaleAlias(dispatchId, source);
-
             if (!EnsureAliasesLoaded())
                 return false;
 
@@ -262,9 +258,6 @@ namespace RoburPseudoCommands
 
         internal static bool IsKnownAlias(string alias)
         {
-            if (IsAnnotationBackgroundScaleAlias(alias))
-                return true;
-
             if (!EnsureAliasesLoaded())
                 return false;
 
@@ -314,9 +307,6 @@ namespace RoburPseudoCommands
 
         private static bool ExecuteAlias(string alias, bool forceExecute, long dispatchId, string source)
         {
-            if (IsAnnotationBackgroundScaleAlias(alias))
-                return ExecuteAnnotationBackgroundScaleAlias(dispatchId, source);
-
             AliasEntry entry;
             if (!AliasStore.Aliases.TryGetValue(alias, out entry))
             {

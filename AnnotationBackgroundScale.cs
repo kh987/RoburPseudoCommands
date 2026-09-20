@@ -19,38 +19,10 @@ namespace RoburPseudoCommands
 {
     public partial class Module
     {
-        internal const string AnnotationBackgroundScaleAlias = "кф";
-        private static Func<CadView> _activeCadViewProvider;
-
         [cmd("pseudo_annotation_background_scale")]
         public void AnnotationBackgroundScaleCommand()
         {
             AnnotationBackgroundScale.Execute(CadView);
-        }
-
-        private static bool IsAnnotationBackgroundScaleAlias(string alias)
-        {
-            return string.Equals((alias ?? string.Empty).Trim(), AnnotationBackgroundScaleAlias,
-                StringComparison.OrdinalIgnoreCase);
-        }
-
-        private static bool ExecuteAnnotationBackgroundScaleAlias(long dispatchId, string source)
-        {
-            try
-            {
-                var view = _activeCadViewProvider == null ? null : _activeCadViewProvider();
-                Logger.Info("built-in alias execute dispatchId=" + dispatchId + " source=" + source +
-                    " alias='" + AnnotationBackgroundScaleAlias + "' route=direct");
-                return AnnotationBackgroundScale.Execute(view);
-            }
-            catch (Exception ex)
-            {
-                Logger.Error("built-in annotation background scale alias failed", ex);
-                MessageBox.Show("Не удалось изменить коэффициент фона аннотаций:" +
-                    Environment.NewLine + ex.Message, "RoburPseudoCommands",
-                    MessageBoxButtons.OK, MessageBoxIcon.Error);
-                return false;
-            }
         }
     }
 
