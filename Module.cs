@@ -253,8 +253,6 @@ namespace RoburPseudoCommands
         {
             if (IsAnnotationBackgroundScaleAlias(alias))
                 return ExecuteAnnotationBackgroundScaleAlias(dispatchId, source);
-            if (IsSafeSettingsAlias(alias))
-                return ExecuteSafeSettings(dispatchId, source);
 
             if (!EnsureAliasesLoaded())
                 return false;
@@ -264,7 +262,7 @@ namespace RoburPseudoCommands
 
         internal static bool IsKnownAlias(string alias)
         {
-            if (IsAnnotationBackgroundScaleAlias(alias) || IsSafeSettingsAlias(alias))
+            if (IsAnnotationBackgroundScaleAlias(alias))
                 return true;
 
             if (!EnsureAliasesLoaded())
@@ -318,8 +316,6 @@ namespace RoburPseudoCommands
         {
             if (IsAnnotationBackgroundScaleAlias(alias))
                 return ExecuteAnnotationBackgroundScaleAlias(dispatchId, source);
-            if (IsSafeSettingsAlias(alias))
-                return ExecuteSafeSettings(dispatchId, source);
 
             AliasEntry entry;
             if (!AliasStore.Aliases.TryGetValue(alias, out entry))
@@ -351,28 +347,6 @@ namespace RoburPseudoCommands
                 return false;
             }
 
-            if (KeyInterceptor.IsEmergencyMode)
-            {
-                string emergencyError;
-                Logger.Info("alias execute diagnostic dispatchId=" + dispatchId + " source=" +
-                    source + " route=emergency-direct alias='" +
-                    alias + "' command='" + entry.Command + "' args=" + args.Length);
-                var emergencyResult = EmergencyCommandRegistry.TryExecute(entry.Command, args, out emergencyError);
-                if (emergencyResult == EmergencyExecutionResult.Cancelled ||
-                    emergencyResult == EmergencyExecutionResult.Completed)
-                    return true;
-
-                var emergencyRecovery = emergencyResult == EmergencyExecutionResult.RegistryFailure
-                    ? Environment.NewLine + Environment.NewLine +
-                      "Сохранённый обработчик повреждён; требуется перезапуск Robur."
-                    : string.Empty;
-                MessageBox.Show(
-                    "Не удалось выполнить псевдокоманду '" + entry.Alias + "' напрямую:" +
-                    Environment.NewLine + emergencyError + emergencyRecovery,
-                    "Аварийный запуск", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                return false;
-            }
-
             try
             {
                 Logger.Info("alias execute diagnostic dispatchId=" + dispatchId + " source=" +
@@ -395,19 +369,13 @@ namespace RoburPseudoCommands
                     "failed dispatchId=" + dispatchId + " alias='" + entry.Alias + "' target='" +
                     (string.IsNullOrEmpty(action) ? entry.Command : action) +
                     "' forceExecute=" + forceExecute, ex);
-                KeyInterceptor.NotifyCommandFailure(ex);
 
-                var recovery = EmergencyCommandRegistry.IsRegistryFailure(ex)
-                    ? Environment.NewLine + Environment.NewLine +
-                      "Включён аварийный режим. Повторите команду; Ctrl+Shift+F12 открывает палитру."
-                    : string.Empty;
                 MessageBox.Show(
-                    string.Format("Failed to execute alias '{0}' -> '{1}':{2}{3}{4}",
+                    string.Format("Failed to execute alias '{0}' -> '{1}':{2}{3}",
                         entry.Alias,
                         string.IsNullOrEmpty(action) ? entry.Command : action,
                         Environment.NewLine,
-                        ex.Message,
-                        recovery),
+                        ex.Message),
                     "RoburPseudoCommands", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return false;
             }

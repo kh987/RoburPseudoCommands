@@ -125,7 +125,6 @@ internal static class Program
 
         var known = T("Module").GetMethod("IsKnownAlias", Flags);
         Check((bool)known.Invoke(null, new object[] { " КФ " }), "built-in annotation alias");
-        Check((bool)known.Invoke(null, new object[] { " НС " }), "built-in safe settings alias");
 
         Call("AnnotationBackgroundScalePatch", "Enable");
         Check((bool)T("AnnotationBackgroundScalePatch").GetProperty("Enabled", Flags).GetValue(null),

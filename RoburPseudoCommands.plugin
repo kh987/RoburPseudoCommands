@@ -29,11 +29,6 @@
       "title": "Коэффициент фона аннотаций...",
       "description": "Изменить коэффициент перекрытия фона выбранных мультивыносок Robur; алиас: кф"
     },
-    "id_pseudo_safe_application_settings": {
-      "cmd": "pseudo_safe_application_settings",
-      "title": "Настройки Robur (безопасный запуск)",
-      "description": "Открыть настройки Robur через сохранённый обработчик; алиас: нс"
-    },
     "id_pseudo_show_log": {
       "cmd": "pseudo_show_log",
       "title": "Show log",
