@@ -5,3 +5,4 @@ dist/
 *.suo
 *.log
 .vs/
+tests/Ui.Tests/artifacts/
