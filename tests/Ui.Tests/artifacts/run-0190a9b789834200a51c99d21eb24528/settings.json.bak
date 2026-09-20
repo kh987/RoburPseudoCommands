@@ -1,0 +1,7 @@
+{
+  "logEnabled": false,
+  "quickInputEnabled": true,
+  "spaceActsAsEnter": true,
+  "safeDeleteUndoEnabled": true,
+  "annotationBackgroundScale": 1.25
+}

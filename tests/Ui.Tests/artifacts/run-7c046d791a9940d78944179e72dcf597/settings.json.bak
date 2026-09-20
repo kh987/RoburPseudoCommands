@@ -1,0 +1,8 @@
+{
+  "logEnabled": false,
+  "quickInputEnabled": true,
+  "spaceActsAsEnter": true,
+  "safeDeleteUndoEnabled": true,
+  "nativePolarPatchEnabled": true,
+  "polarViewRotationEnabled": true
+}

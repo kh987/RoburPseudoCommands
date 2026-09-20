@@ -1,0 +1,9 @@
+{
+  "logEnabled": false,
+  "quickInputEnabled": true,
+  "spaceActsAsEnter": true,
+  "safeDeleteUndoEnabled": true,
+  "nativePolarPatchEnabled": false,
+  "polarViewRotationEnabled": false,
+  "annotationBackgroundScale": 1.25
+}
