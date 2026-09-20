@@ -1,115 +1,135 @@
 # RoburPseudoCommands
 
-Плагин псевдокоманд для Topomatic Robur: пользователь вводит короткий alias в командной строке Robur, а плагин запускает связанную команду или action Robur.
+Плагин псевдокоманд для Topomatic Robur: пользователь запускает связанную команду или action Robur через компактный QuickInput popup у курсора, набирая короткий alias. Опционально Space работает как Enter в активном чертёжном виде, повторяя и подтверждая команды. Отдельная команда изменяет коэффициент перекрытия фона маски выбранных мультивыносок Robur так, что он переживает штатное пересоздание текста.
 
 ## Совместимость
 
-- Robur: проверено в Robur 16.0.
+- Robur: поддерживается Robur 16.0. Проверено: Robur Genplan 16.0 (сборка 16.0.62.12) для текущей версии `0.8.0-debug`; Robur Genplan 16.0 для стабильной `v0.7.0`; ранние версии дополнительно проверялись в Robur Road 16.0 и учебной версии.
+- Не проверено: Robur 17 (unknown).
 - Target framework: .NET Framework `net48`.
-- Зависимости Robur: `Topomatic.ApplicationPlatform`, `Topomatic.Cad.View`, `Topomatic.Controls`.
+- Зависимости Robur: `Topomatic.ApplicationPlatform`, `Topomatic.Cad.View`, `Topomatic.Controls`, `Topomatic.Dwg`, `Topomatic.Dwg.Layer`, `Topomatic.Maps`; `Lib.Harmony` 2.4.2 (поставляется в пакете).
+
+Совместимость по имени пакета не заявляется: поддержка редакции подтверждается только фактической проверкой в ней.
 
 ## Установка
 
-1. Скачайте актуальный `RoburPseudoCommands-*.tpm` из GitHub Releases.
-2. Установите пакет через менеджер пакетов Robur.
+1. Скачайте `RoburPseudoCommands-*.tpm` из GitHub Releases.
+2. Установите пакет через менеджер пакетов Robur (Topomatic Package Manager).
 3. Перезапустите Robur.
 4. Откройте `Сервис -> Псевдокоманды...`.
+
+Последний опубликованный релиз — `v0.7.0`. Версия `0.8.0` находится на стадии Debug и публично не публиковалась.
 
 TPM содержит:
 
 ```text
 package.json
 bin/RoburPseudoCommands.dll
+bin/0Harmony.dll
+bin/Harmony-LICENSE.txt
 bin/aliases.json
 plugins/RoburPseudoCommands.plugin
 icons/
 icons/ic_robur_pseudo_commands_*.png
 ```
 
+## Настройки пользователя
+
 При первом запуске плагин создаёт active config:
 
 ```text
 %AppData%\Topomatic\RoburPseudoCommands\aliases.json
+%AppData%\Topomatic\RoburPseudoCommands\settings.json
 ```
 
-Bundled preset содержит 34 aliases. Если active config уже существует, обновление плагина не заменяет его автоматически.
+Bundled preset из пакета содержит 34 aliases и используется только как стартовый: уже существующий active config при обновлении плагина не заменяется. `aliases.json` и `settings.json` пишутся атомарно; предыдущая версия остаётся рядом с суффиксом `.bak`. Если файл повреждён и не читается, плагин сообщает путь и действует по fail-safe правилу (клавиатурные механизмы выключены); неизвестные ключи из старых версий настроек игнорируются.
+
+`settings.json`:
+
+- `logEnabled` — диагностический лог, по умолчанию выключен;
+- `quickInputEnabled` — QuickInput popup, по умолчанию включён;
+- `spaceActsAsEnter` — Space как Enter, по умолчанию включён;
+- `annotationBackgroundScale` — последний применённый коэффициент маски, по умолчанию `1.05`.
+
+Диагностический лог: `%AppData%\Topomatic\RoburPseudoCommands\RoburPseudoCommands.log`, ограничен 5 МБ с одной ротацией `.1`.
 
 ## Команды
 
 | Команда | Где находится | Назначение |
 |---|---|---|
-| `pseudo_edit_aliases` | `Сервис -> Псевдокоманды...`, командная строка Robur | Открыть редактор aliases. |
-| `pseudo_reload_aliases` | Командная строка Robur | Перечитать active `aliases.json`. |
+| `pseudo_edit_aliases` | `Сервис -> Псевдокоманды...` | Открыть редактор aliases. |
 | `pseudo_command` | Командная строка Robur | Ручной ввод alias через prompt. |
+| `pseudo_reload_aliases` | Командная строка Robur | Перечитать active `aliases.json`. |
 | `pseudo_show_log` | Командная строка Robur | Показать путь к диагностическому логу и последние строки. |
-| Dynamic aliases из `aliases.json` | Командная строка Robur | Запустить связанную команду или action Robur. |
+| `pseudo_annotation_background_scale` | Alias из редактора (например, `кф`) или командная строка Robur | Коэффициент перекрытия фона выбранных мультивыносок. |
 
-`pseudo_alias_bootstrap` используется внутренне для прогрева command layer. `pseudo_show_aliases` оставлен скрыто для обратной совместимости, но удалён из публичного `.plugin`, README-сценариев и bundled aliases.
+Alias'ы из `aliases.json` запускаются через QuickInput popup (первая буква или цифра в свободном командном состоянии) либо через `pseudo_command`. Прямой ввод alias в командной строке Robur, как в версиях до 0.8.0, не используется: динамическая регистрация alias-команд убрана, изменения alias'ов применяются сразу после `Сохранить`, без перезапуска Robur.
+
+`pseudo_show_aliases` оставлен в коде скрыто для обратной совместимости, но удалён из публичного `.plugin` и bundled aliases.
+
+## Коэффициент маски мультивыноски
+
+1. Назначьте alias на `pseudo_annotation_background_scale` в редакторе (например, `кф`) — команду можно найти двойным кликом по колонке `Команда`.
+2. Выберите одну или несколько мультивыносок Robur и вызовите alias.
+3. Введите коэффициент от `1,00` до `5,00` (по умолчанию подставляется последний применённый).
+4. Коэффициент расширяет фон-маску текста мультивыноски и сохраняется при штатном пересоздании текста, а также после сохранения и повторного открытия чертежа.
+
+Работает только с мультивыносками Robur (`MapsLeaderEntity`); непомеченные мультивыноски не изменяются.
 
 ## Редактор
 
-1. Откройте `Сервис -> Псевдокоманды...` или выполните `pseudo_edit_aliases`.
-2. Добавьте alias вручную или выберите Robur action двойным кликом по ячейке `Команда`/`Action`. При каждом выборе поля command/action и описание обновляются из выбранной action; если `description` отсутствует, используется `title`.
-3. Используйте `Импорт`, чтобы загрузить aliases из JSON в таблицу без немедленной записи active config. У каждой записи обязателен непустой `command`; `action` остаётся дополнительным.
-4. Нажмите `Сохранить`, чтобы записать таблицу в active `aliases.json`.
-5. Используйте `Отменить правки`, чтобы отменить несохранённые изменения и заново загрузить active `aliases.json`.
-6. Используйте `Экспорт`, чтобы сохранить текущую таблицу aliases в отдельный readable JSON-файл.
+1. Откройте `Сервис -> Псеводокоманды...`.
+2. Добавьте alias вручную или выберите Robur action двойным кликом по ячейке `Команда`/`Action`. Описание строки берётся из `description` выбранной action (fallback — `title`) и всегда соответствует последнему выбору.
+3. `Импорт` загружает aliases из JSON в таблицу без записи active config; у каждой записи обязателен непустой `command`.
+4. `Сохранить` записывает таблицу в active `aliases.json` и делает alias'ы доступными в QuickInput сразу.
+5. `Отменить правки` откатывает несохранённые изменения; `Экспорт` сохраняет таблицу в readable JSON.
 
-Active aliases и settings сохраняются атомарно. При замене существующего файла предыдущая версия остаётся рядом с ним с суффиксом `.bak`. Если active `aliases.json` повреждён, плагин сообщает путь и не перезаписывает файл автоматически.
+В редакторе — две независимые настройки, обе включены по умолчанию для новой конфигурации:
 
-## Быстрый ввод и Space как Enter
+- `Быстрый ввод псевдокоманд` — popup alias у курсора; первым символом может быть буква или цифра (цифровой ряд и NumPad поддерживаются).
+- `Space действует как Enter` — передаёт Space в активный `CadView` как штатный Enter: повторяет последнюю команду, подтверждает шаг, завершает команду.
 
-В редакторе доступны две независимые настройки, обе по умолчанию включены для новой конфигурации и legacy settings без этих полей:
-
-- `Быстрый ввод псевдокоманд` открывает компактный ввод alias у курсора. Первым символом может быть буква или цифра; Enter и Space запускают выбранный alias, включая односимвольный.
-- `Space действует как Enter` передаёт Space в активный `CadView` как штатный Enter. Он повторяет последнюю команду, запускает уже введённую команду, подтверждает текущий шаг и завершает команду там же, где это делает физический Enter.
-
-QuickInput открывается только в свободном командном состоянии. Space-as-Enter работает и во время активной команды. Перехват ограничен `CadView`; Ctrl, Alt и Shift отключают преобразование Space для текущего нажатия.
-
-Явно сохранённые значения настроек не перезаписываются. Если `settings.json` повреждён и не читается, оба клавиатурных механизма остаются выключенными по fail-safe правилу.
+QuickInput открывается только в свободном командном состоянии; Space-as-Enter работает и во время активной команды. Перехват ограничен `CadView`; Ctrl, Alt и Shift отключают преобразование Space для текущего нажатия. Явно сохранённые значения настроек не перезаписываются.
 
 ## Проверка после установки
 
-- В меню Robur есть пункт `Сервис -> Псевдокоманды...`.
-- Окно редактора открывается.
-- В окне `О плагине` указана актуальная версия плагина и состояние диагностического лога.
-- В `О плагине` для текущей сборки указано `0.7.0`, а состояния QuickInput, Space-as-Enter и message filter соответствуют настройкам.
-- При последовательном выборе двух разных Robur actions описание строки соответствует последней выбранной action.
-- В таблице aliases отображается 34 записи при первом active config.
-- Несколько aliases запускают связанные команды Robur после перезапуска.
-- При включённом QuickInput односимвольный и многосимвольный alias запускаются по Enter и Space.
-- Alias, начинающийся с цифры, открывается через QuickInput с цифрового ряда и NumPad при включённом NumLock.
+- В меню Robur есть пункт `Сервис -> Псеводокоманды...`, окно редактора открывается.
+- `О плагине` показывает актуальную версию и стадию (например, `0.8.0-debug`), путь фактически загруженной DLL и состояние лога — сверьте DLL path с установленной версией.
+- Alias запускается через QuickInput сразу после `Сохранить` (без перезапуска Robur).
+- Alias на штатную команду открывает её; для `options`, `dsettings`, `smdx_manager` используется безопасный сигнатурный запуск.
+- Коэффициент маски: применяется к выбранным мультивыноскам, сохраняется при изменении текста/положения и после save/reopen; при `2,0` маска заметно шире, чем при `1,05`.
 - При включённом Space-as-Enter Space повторяет, подтверждает и завершает команды так же, как физический Enter.
+
+Реально выполненные проверки текущей версии: ручной smoke в Robur Genplan 16.0.62.12 (все сценарии выше, включая отсутствие удалённой функциональности), офлайн-набор UI/settings тестов (49 проверок), лог без исключений. История проверок прошлых версий — в GitHub Releases.
 
 ## Ограничения
 
-- Новые, удалённые или переименованные alias-имена требуют перезапуска Robur.
-- Изменение target существующего alias можно применять через `pseudo_reload_aliases`, но при старом кэше Robur может понадобиться перезапуск.
-- Bundled `aliases.json` используется только как стартовый preset и не перезаписывает существующий active config.
-- Диагностический лог по умолчанию отключён; включите `Вести лог` в окне редактора, если нужен файл диагностики.
-- Активный диагностический лог ограничен 5 МБ; при ротации предыдущий файл сохраняется как `RoburPseudoCommands.log.1`, а команда просмотра читает только хвост лога.
+- Alias запускается только через QuickInput popup или `pseudo_command`; ввода alias в командной строке Robur нет.
 - При включённом Space-as-Enter обычный пробел внутри активного `CadView` недоступен; используйте пробел с модификатором или временно отключите настройку.
-- QuickInput и Space-as-Enter реализованы process-local message filter, а не глобальным Windows hook; при трёх последовательных ошибках фильтр отключается с fail-open поведением.
-- Горячие клавиши по умолчанию не назначаются, чтобы не конфликтовать со штатными назначениями Robur.
-- Плагин не создаёт геометрию и не работает напрямую с `DwgEntity` или `DrawingLayer`.
+- Перехват реализован process-local message filter, а не глобальным hook; при трёх последовательных ошибках фильтр отключается (fail-open).
+- Команда коэффициента работает только с мультивыносками Robur (`MapsLeaderEntity`); значение коэффициента хранится в extension dictionary чертежа.
+- Диагностический лог по умолчанию отключён; включите `Вести лог` в редакторе при диагностике.
+- Горячие клавиши по умолчанию не назначаются.
+- Плагин не создаёт геометрию; изменяет свойства существующих примитивов (маска) и настройки.
+- Версия `0.8.0` — Debug: техническая сборка не означает Stable; для регулярного использования доступна `v0.7.0`.
 
 ## Сборка из исходников
 
 Требуется установленный Robur 16.0 с DLL SDK. Если Robur установлен не в стандартную папку, передайте путь через `-RoburInstallDir`.
 
 ```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\build-tpm.ps1 -Configuration Release -RoburInstallDir "C:\Program Files\Topomatic Robur Road 16.0"
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\build-tpm.ps1 -Configuration Release -RoburInstallDir "C:\Program Files\Topomatic Robur Genplan 16.0"
 ```
 
-Готовый пакет будет создан в `dist\RoburPseudoCommands-<version>.tpm`.
+Скрипт собирает Release-конфигурацию и создаёт `dist\RoburPseudoCommands-<version>.tpm` с `icons/`-записью и числовой `package.json.version`.
 
 ## Благодарности и источник идеи
 
 Идея компактного popup-ввода команды и запуска по Enter/Space была почерпнута
 из проекта [Y-Abramov/QuickCommands](https://github.com/Y-Abramov/QuickCommands).
-Проект использовался как поведенческий референс; динамическая регистрация aliases,
-маршрутизация Robur actions, host-owned повтор команды, настройки и защитные
-механизмы RoburPseudoCommands реализованы и адаптированы отдельно.
+Проект использовался как поведенческий референс; маршрутизация Robur actions,
+host-owned повтор команды, настройки и защитные механизмы RoburPseudoCommands
+реализованы и адаптированы отдельно.
 
 ## Лицензия
 
@@ -119,11 +139,10 @@ Topomatic Robur, его SDK, библиотеки и товарные знаки
 
 ## Версия
 
-- Текущая версия: `v0.7.0`.
-- Стадия: `Stable`.
+- Текущая версия: `0.8.0-debug` (package `0.8.0`).
+- Стадия: `Debug`.
 - Последняя проверенная стабильная версия: `v0.7.0`.
-- Точный TPM `0.7.0`, собранный из commit `d78baa7`, проверен пользователем в Robur Genplan 16.0, .NET Framework `net48`.
-- Подтверждены загрузка, aliases, QuickInput, Space-as-Enter, редактор и обновление description после повторного выбора action.
+- Текущая версия проверена вручную в Robur Genplan 16.0.62.12 (установка через Package Manager, alias'ы, QuickInput, Space-as-Enter, редактор, коэффициент маски, лог без исключений).
 - Последний опубликованный GitHub Release: [`v0.7.0`](https://github.com/kh987/RoburPseudoCommands/releases/tag/v0.7.0).
 
 ## Robur Docs / API-основание
@@ -133,4 +152,6 @@ Topomatic Robur, его SDK, библиотеки и товарные знаки
 - `Ключ "actions"` / https://help.topomatic.ru/v9/doku.php?id=developers:references:core.plugin:actions
 - `Ключ "menubars"` / https://help.topomatic.ru/v9/doku.php?id=developers:references:core.plugin:menubars
 - `Работа с иконками меню и элементов` / https://help.topomatic.ru/v9/doku.php?id=developers:references:icons
-- `Ключ "hotkeys"` / https://help.topomatic.ru/v9/doku.php?id=developers:references:core.plugin:hotkeys
+- `DwgMText.FillBoxScale` / https://help.topomatic.ru/v9/doku.php?id=developers:references:topomatic.dwg.entities.dwgmtext.fillboxscale
+- `DwgMText` / https://help.topomatic.ru/v9/doku.php?id=developers:references:topomatic.dwg.entities.dwgmtext
+- `DwgEntity.Regen` / https://help.topomatic.ru/v9/doku.php?id=developers:references:topomatic.dwg.entities.dwgentity.regen_system.eventargs
