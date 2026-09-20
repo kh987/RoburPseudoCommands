@@ -32,7 +32,6 @@ namespace RoburPseudoCommands
 
         public AliasEditorForm(Func<Topomatic.Cad.View.CadView> viewProvider = null)
         {
-            _viewProvider = viewProvider ?? (() => null);
             Text = "Псевдокоманды";
             StartPosition = FormStartPosition.CenterScreen;
             AutoScaleMode = AutoScaleMode.Dpi;
@@ -66,10 +65,9 @@ namespace RoburPseudoCommands
             {
                 Dock = DockStyle.Fill,
                 ColumnCount = 1,
-                RowCount = 6,
+                RowCount = 5,
                 Padding = new Padding(12)
             };
-            root.RowStyles.Add(new RowStyle(SizeType.AutoSize));
             root.RowStyles.Add(new RowStyle(SizeType.AutoSize));
             root.RowStyles.Add(new RowStyle(SizeType.AutoSize));
             root.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
@@ -181,7 +179,6 @@ namespace RoburPseudoCommands
             inputOptions.Controls.Add(_safeDeleteUndoEnabledCheckBox);
 
             root.Controls.Add(inputOptions, 0, 1);
-            root.Controls.Add(BuildPolarOptions(), 0, 2);
 
             _bindingSource.DataSource = _table;
             _grid.AllowUserToAddRows = false;
@@ -200,12 +197,12 @@ namespace RoburPseudoCommands
             _grid.DataError += delegate(object sender, DataGridViewDataErrorEventArgs e) { e.ThrowException = false; };
             AddColumns();
             UpdateAdvancedMode();
-            root.Controls.Add(_grid, 0, 3);
+            root.Controls.Add(_grid, 0, 2);
 
             _summaryLabel.AutoSize = true;
             _summaryLabel.Dock = DockStyle.Fill;
             _summaryLabel.Padding = new Padding(0, 6, 0, 6);
-            root.Controls.Add(_summaryLabel, 0, 4);
+            root.Controls.Add(_summaryLabel, 0, 3);
 
             var buttons = new FlowLayoutPanel
             {
@@ -232,7 +229,7 @@ namespace RoburPseudoCommands
                 Padding = new Padding(0, 8, 12, 0),
                 Margin = new Padding(4)
             });
-            root.Controls.Add(buttons, 0, 5);
+            root.Controls.Add(buttons, 0, 4);
         }
 
         private Button CreateButton(string text, Action action, string toolTipText)
@@ -665,7 +662,6 @@ namespace RoburPseudoCommands
             text.AppendLine();
             text.AppendLine("Версия: " + GetPluginVersion());
             text.AppendLine("Стадия: Dev / 0.8.0-dev.8 (MapsLeader background restore)");
-            text.AppendLine(PolarOptions.Status());
             text.AppendLine();
             text.AppendLine("DLL:");
             text.AppendLine(assembly.Location);

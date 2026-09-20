@@ -22,7 +22,6 @@ namespace RoburPseudoCommands
             base.Initialize(factory);
             _activeCadViewProvider = () => CadView;
             LogLoaded();
-            InitializePolarPatch();
             try
             {
                 AnnotationBackgroundScalePatch.Enable();
@@ -99,16 +98,15 @@ namespace RoburPseudoCommands
         [cmd("pseudo_edit_aliases")]
         public void EditAliases()
         {
-            OpenAliasEditor(false);
+            OpenAliasEditor();
         }
 
-        private void OpenAliasEditor(bool focusPolar)
+        private void OpenAliasEditor()
         {
             try
             {
                 using (var form = new AliasEditorForm(() => CadView))
                 {
-                    if (focusPolar) form.FocusPolarOptions();
                     form.ShowDialog();
 
                     if (form.Saved)

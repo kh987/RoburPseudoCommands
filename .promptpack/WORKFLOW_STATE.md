@@ -2,7 +2,7 @@
 
 Plugin: RoburPseudoCommands
 Cycle ID: 2026-09-02-feature-v0.8.0
-Updated: 2026-09-20 11:40
+Updated: 2026-09-20 11:59
 State path: D:\Codex\RoburPseudoCommands\.promptpack\WORKFLOW_STATE.md
 
 ## Lifecycle
@@ -19,24 +19,25 @@ Test level: extended
 P2 status: approved
 Draft revision: n/a
 Draft status: n/a
-Current step: S3.1 preflight pending (план уточнён 2026-09-20: S3.1/S3.2, S4.1/S4.2)
-Status: awaiting-user
+Current step: S3.2 (delta preflight после завершённого S3.1)
+Status: in-progress
+Execution mode: automatic-dev — поручение пользователя 2026-09-20 продолжать утверждённый Dev-cycle автоматически. Граница: подшаги S3.1, S3.2, S4.1, S4.2, S5 и подготовка артефакта/сценария S6 внутри Cycle 2026-09-02-feature-v0.8.0. Остановки: подготовка host-проверки S6 (awaiting-user), lifecycle-gate Dev → Debug (без CHECK/APPLY), BLOCKED. Вне границы: установка/запуск Robur, синхронизация карточки/README, проекты будущих плагинов.
 
 ## Profile modules
 SYSTEM_UI.md: read — фактическое чтение, Prompt Pack SMB (сессии 2026-09-18/2026-09-20)
 SYSTEM_GEOMETRY.md: read — фактическое чтение, Prompt Pack SMB (сессии 2026-09-18/2026-09-20)
 
 ## Evidence
-Build: passed — dev.8 Release 0/0 против Robur Genplan 16.0; после S3–S5 станет stale, пересборка dev.9
-Deploy: passed — чистая установка dev.8.tpm на reproduction PC (подтверждено пользователем 2026-09-18)
-Runtime: passed — acceptance-матрица dev.8 на Robur Genplan 16.0.62.12, подтверждена пользователем 2026-09-18; копия лога с тестовой машины не сохранена
-UI: passed — offline UI/settings checks=94 (dev.8); после S3.1 ожидаемо изменится (удаление полярных проверок)
-Geometry: passed — визуальная проверка маски мультивыноски в acceptance dev.8 (пользователь)
+Build: passed — S3.1: Release 0/0 против Robur Genplan 16.0 (dev.8 → рабочая база пересборки dev.9)
+Deploy: passed — чистая установка dev.8.tpm на reproduction PC (2026-09-18); станет stale после S5
+Runtime: passed — acceptance dev.8 на 16.0.62.12 (2026-09-18); станет stale после S5, перенос через S6
+UI: passed — Ui.Tests PASS checks=76 после S3.1 (было 94: −16 полярных проверок, −2 проверки удалённого 4-го Render)
+Geometry: passed — визуальная проверка маски в acceptance dev.8; повтор через S6
 Docs: pending — карточка/README отражают v0.7.0; синхронизация до Debug → Stabilization
 
 ## Cursor
-Last completed action: Mid-Dev plan-only correction completed (23, 2026-09-20): Deep-подшаги S3.1/S3.2/S4.1/S4.2 зафиксированы, O4 закрыт, решения P1-1 (signature-safe dispatch сохранён)/P1-2 (IsCancellation остаётся)/P1-3 (safeDeleteUndo уходит в S4.2) закреплены; P2 updated: yes
-Next action: Run 21_WORKFLOW_IMPLEMENT.md section "Перед реализацией — восстановить актуальный P2 и Workflow profile" for S3.1
+Last completed action: S3.1 завершён (11:59): полярный комплекс удалён из плагина; build 0/0; Ui.Tests checks=76 PASS; grep-absence (polar/полярн) чисто; layout редактора перекомпонован (5 строк)
+Next action: automatic-dev — S3.2: удалить tests/PolarPatch.Tests, проверить неизменность сборки плагина
 
 ## Open blockers
 - none

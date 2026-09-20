@@ -59,7 +59,6 @@
 
   <ItemGroup>
     <Compile Remove="tests\**\*.cs" />
-    <Compile Remove="PolarDiagnostics.cs" />
     <None Remove="DiagnosticsSDK\**\*" />
     <None Include="$(PkgLib_Harmony)\LICENSE" Link="Harmony-LICENSE.txt" CopyToOutputDirectory="Always" />
     <None Include="RoburPseudoCommands.plugin" CopyToOutputDirectory="Always" />

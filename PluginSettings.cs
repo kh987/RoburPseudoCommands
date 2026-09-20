@@ -56,59 +56,6 @@ namespace RoburPseudoCommands
             }
         }
 
-        public static bool IsNativePolarPatchEnabled()
-        {
-            lock (SyncRoot) return GetSettings().NativePolarPatchEnabled;
-        }
-
-        public static void SetPolarOptions(bool enabled, bool rotation)
-        {
-            lock (SyncRoot)
-            {
-                var settings = GetSettings();
-                var oldEnabled = settings.NativePolarPatchEnabled;
-                var oldRotation = settings.PolarViewRotationEnabled;
-                settings.NativePolarPatchEnabled = enabled;
-                settings.PolarViewRotationEnabled = rotation;
-                try { Save(settings); }
-                catch
-                {
-                    settings.NativePolarPatchEnabled = oldEnabled;
-                    settings.PolarViewRotationEnabled = oldRotation;
-                    throw;
-                }
-            }
-        }
-
-        public static bool IsPolarViewRotationEnabled()
-        {
-            lock (SyncRoot) return GetSettings().PolarViewRotationEnabled;
-        }
-
-        public static void SetPolarViewRotationEnabled(bool enabled)
-        {
-            lock (SyncRoot)
-            {
-                var settings = GetSettings();
-                var previous = settings.PolarViewRotationEnabled;
-                settings.PolarViewRotationEnabled = enabled;
-                try { Save(settings); }
-                catch { settings.PolarViewRotationEnabled = previous; throw; }
-            }
-        }
-
-        public static void SetNativePolarPatchEnabled(bool enabled)
-        {
-            lock (SyncRoot)
-            {
-                var settings = GetSettings();
-                var previous = settings.NativePolarPatchEnabled;
-                settings.NativePolarPatchEnabled = enabled;
-                try { Save(settings); }
-                catch { settings.NativePolarPatchEnabled = previous; throw; }
-            }
-        }
-
         public static bool IsSpaceActsAsEnterEnabled()
         {
             lock (SyncRoot) return GetSettings().SpaceActsAsEnter;
@@ -179,12 +126,6 @@ namespace RoburPseudoCommands
             text.Append("  \"safeDeleteUndoEnabled\": ");
             text.Append(settings.SafeDeleteUndoEnabled ? "true" : "false");
             text.AppendLine(",");
-            text.Append("  \"nativePolarPatchEnabled\": ");
-            text.Append(settings.NativePolarPatchEnabled ? "true" : "false");
-            text.AppendLine(",");
-            text.Append("  \"polarViewRotationEnabled\": ");
-            text.Append(settings.PolarViewRotationEnabled ? "true" : "false");
-            text.AppendLine(",");
             text.Append("  \"annotationBackgroundScale\": ");
             text.Append(settings.AnnotationBackgroundScale.ToString("R", CultureInfo.InvariantCulture));
             text.AppendLine();
@@ -209,12 +150,6 @@ namespace RoburPseudoCommands
 
         [DataMember(Name = "logEnabled")]
         public bool LogEnabled { get; set; }
-
-        [DataMember(Name = "nativePolarPatchEnabled")]
-        public bool NativePolarPatchEnabled { get; set; }
-
-        [DataMember(Name = "polarViewRotationEnabled")]
-        public bool PolarViewRotationEnabled { get; set; }
 
         [DataMember(Name = "annotationBackgroundScale", EmitDefaultValue = false)]
         private double? AnnotationBackgroundScaleValue

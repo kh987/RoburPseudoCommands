@@ -34,21 +34,6 @@
       "title": "Настройки Robur (безопасный запуск)",
       "description": "Открыть настройки Robur через сохранённый обработчик; алиас: нс"
     },
-    "id_pseudo_polar_diagnostics": {
-      "cmd": "pseudo_polar_diagnostics",
-      "title": "Полярная диагностика (устаревшая команда)",
-      "description": "Совместимость со старым вызовом; временная трассировка удалена из сборки"
-    },
-    "id_pseudo_polar_patch": {
-      "cmd": "pseudo_polar_patch",
-      "title": "Полярное отслеживание: заплатка...",
-      "description": "Открыть полярные настройки в окне Псевдокоманды"
-    },
-    "id_pseudo_polar_rotation": {
-      "cmd": "pseudo_polar_rotation",
-      "title": "Полярное отслеживание: поворот пространства...",
-      "description": "Открыть полярные настройки в окне Псевдокоманды"
-    },
     "id_pseudo_show_log": {
       "cmd": "pseudo_show_log",
       "title": "Show log",

@@ -16,10 +16,8 @@ internal static class Program
     private static Type T(string name) { return plugin.GetType("RoburPseudoCommands." + name, true); }
     private static object Call(string type, string method, params object[] args) { return T(type).GetMethod(method, Flags).Invoke(null, args); }
     private static bool Saved(string name) { return (bool)Call("PluginSettings", name); }
-    private static bool Runtime(string name) { return (bool)T("NativePolarPatch").GetProperty(name, Flags).GetValue(null); }
     private static void Check(bool value, string message) { if (!value) throw new Exception(message); checks++; }
     private static bool Redirect(ref string __result) { __result = fixture; return false; }
-    private static void FailWrite() { throw new IOException("Injected persistence failure"); }
     private static void CountAnnotationRegen() { annotationRegens++; }
     [STAThread]
     private static int Main(string[] args)
@@ -40,53 +38,16 @@ internal static class Program
             Check(plugin.GetType("RoburPseudoCommands.PolarDiagnostics") == null, "temporary tracing excluded");
             TestProtectedMenuCommands();
             TestAnnotationBackgroundScale();
-            Call("PolarOptions", "Apply", null, true, true);
-            Check(Runtime("Enabled") && Runtime("RotationEnabled"), "runtime enabled");
-            Check(Saved("IsNativePolarPatchEnabled") && Saved("IsPolarViewRotationEnabled"), "saved enabled");
             var settingsPath = (string)T("PluginSettings").GetProperty("SettingsPath", Flags).GetValue(null);
             Check(settingsPath.StartsWith(fixture, StringComparison.OrdinalIgnoreCase), "isolated settings");
-            var prior = File.ReadAllText(settingsPath);
-            var writer = T("AtomicFileWriter").GetMethod("WriteAllText", Flags);
-            harness.Patch(writer, prefix: new HarmonyMethod(typeof(Program), "FailWrite"));
-            bool failed = false;
-            try { Call("PolarOptions", "Apply", null, false, false); }
-            catch (TargetInvocationException ex) { failed = ex.InnerException is IOException; }
-            finally { harness.Unpatch(writer, HarmonyPatchType.All, harness.Id); }
-            Check(failed, "write failure propagated");
-            Check(Runtime("Enabled") && Runtime("RotationEnabled"), "runtime rollback");
-            Check(Saved("IsNativePolarPatchEnabled") && Saved("IsPolarViewRotationEnabled"), "cached settings rollback");
-            Check(File.ReadAllText(settingsPath) == prior, "disk settings retained");
             Application.EnableVisualStyles();
             using (var form = (Form)Activator.CreateInstance(T("AliasEditorForm"), Flags, null, new object[] { null }, null))
             {
-                var enabled = (CheckBox)form.Controls.Find("polarEnabled", true)[0];
-                var rotation = (CheckBox)form.Controls.Find("polarRotation", true)[0];
-                enabled.Checked = false;
-                Check(!rotation.Enabled && rotation.Checked, "disabled rotation preference retained");
-                Check(Saved("IsNativePolarPatchEnabled") && Runtime("Enabled"), "draft does not apply");
-                Check(File.ReadAllText(settingsPath) == prior, "draft does not save");
-                Render(form, new Size(900, 520), "pending.png");
-                enabled.Checked = true;
-                Check(rotation.Enabled && rotation.Checked, "rotation restored with parent");
                 Render(form, new Size(1120, 680), "default.png");
                 Render(form, new Size(900, 520), "minimum.png");
                 form.Scale(new SizeF(1.5f, 1.5f));
                 Render(form, new Size(1350, 780), "scaled150.png");
             }
-            Call("PolarOptions", "Apply", null, false, true);
-            Check(!Runtime("Enabled") && Runtime("RotationEnabled"), "disable retains runtime preference");
-            Check(!Saved("IsNativePolarPatchEnabled") && Saved("IsPolarViewRotationEnabled"), "disable retains persisted preference");
-            T("PluginSettings").GetField("_settings", Flags).SetValue(null, null);
-            Check(!Saved("IsNativePolarPatchEnabled") && Saved("IsPolarViewRotationEnabled"), "preferences survive reload");
-            Check(((string)Call("PolarOptions", "Status")).Contains("не действует"), "inactive factual rotation status");
-            var enable = T("NativePolarPatch").GetMethod("Enable", Flags);
-            harness.Patch(enable, prefix: new HarmonyMethod(typeof(Program), "FailWrite"));
-            failed = false;
-            try { Call("PolarOptions", "Apply", null, true, false); }
-            catch (TargetInvocationException ex) { failed = ex.InnerException is IOException; }
-            finally { harness.Unpatch(enable, HarmonyPatchType.All, harness.Id); }
-            Check(failed && !Runtime("Enabled") && Runtime("RotationEnabled"), "native failure restores runtime");
-            Check(!Saved("IsNativePolarPatchEnabled") && Saved("IsPolarViewRotationEnabled"), "native failure retains preferences");
             Console.WriteLine("PASS UI/settings checks=" + checks + " renders=" + fixture);
             return 0;
         }
