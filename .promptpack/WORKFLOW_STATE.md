@@ -2,7 +2,7 @@
 
 Plugin: RoburPseudoCommands
 Cycle ID: 2026-09-02-feature-v0.8.0
-Updated: 2026-09-20 12:16
+Updated: 2026-09-20 12:35
 State path: D:\Codex\RoburPseudoCommands\.promptpack\WORKFLOW_STATE.md
 
 ## Lifecycle
@@ -19,35 +19,35 @@ Test level: extended
 P2 status: approved
 Draft revision: n/a
 Draft status: n/a
-Current step: S6 (host smoke 16.0.62.12) — артефакт и ручной сценарий подготовлены, ожидание пользователя
+Current step: S6 завершён (host smoke пройден); функциональный состав P2 реализован полностью; ожидание CHECK Dev → Debug
 Status: awaiting-user
-Execution mode: automatic-dev — поручение пользователя 2026-09-20: подшаги S3.1–S5 выполнены, достигнута граница поручения (подготовка host-проверки S6). Дальнейшее — только по действию пользователя.
+Execution mode: automatic-dev завершён по границе поручения (S3.1–S5 реализованы, S6 выполнен пользователем 2026-09-20).
 
 ## Profile modules
 SYSTEM_UI.md: read — фактическое чтение, Prompt Pack SMB (сессии 2026-09-18/2026-09-20)
 SYSTEM_GEOMETRY.md: read — фактическое чтение, Prompt Pack SMB (сессии 2026-09-18/2026-09-20)
 
 ## Evidence
-Build: passed — dev.9 Release 0/0 против Robur Genplan 16.0; DLL product 0.8.0-dev.9, file 0.8.0.0
-Deploy: stale — dev.8 установлен на reproduction PC; dev.9 ожидает установки (S6)
-Runtime: stale — acceptance dev.8 (2026-09-18) неприменим к dev.9; повтор по smoke-матрице S6
-UI: passed — offline Ui.Tests PASS checks=49 (dev.9); host UI-проверка — S6
-Geometry: stale — визуальная проверка маски dev.8; повтор через alias кф в S6
+Build: passed — dev.9 Release 0/0 против Robur Genplan 16.0; DLL product 0.8.0-dev.9
+Deploy: passed — dev.9.tpm чистая установка на reproduction PC, DLL загружена (лог 2026-09-20 12:23)
+Runtime: passed — smoke-матрица S6 полностью ок (пользователь, 2026-09-20, Robur Genplan 16.0.62.12); лог без exception/error
+UI: passed — offline checks=49; host: редактор без полярной панели и safeDeleteUndo, About dev.9 без аварийных строк
+Geometry: passed — маска мультивыноски через alias кф: 2,0/1,05, Recreate, save/reopen (пользователь)
 Docs: pending — карточка/README отражают v0.7.0; синхронизация до Debug → Stabilization
 
 ## Cursor
-Last completed action: S5 завершён (12:16): built-in alias кф удалён (Module.cs, AnnotationBackgroundScale.cs), .plugin description без «алиас: кф», InformationalVersion 0.8.0-dev.9, About dev.9; TPM собран и верифицирован; build 0/0; Ui.Tests PASS 49. Внутренний post-implementation контроль инвариантов пройден (grep-absence по всем трём комплексам, состав diff соответствует P2)
-Next action: пользователь устанавливает dist/RoburPseudoCommands-0.8.0-dev.9.tpm на reproduction PC, назначает alias кф → pseudo_annotation_background_scale через редактор, перезапускает Robur и прогоняет smoke-матрицу S6 (сценарий передан в чате 2026-09-20)
+Last completed action: S6 завершён (2026-09-20): все пункты smoke-матрицы ок; RoburPseudoCommands.log (копия в корне проекта) — 0 exception/error; dev.9 загружена, Harmony-патчи подключены на 16.0.62.12; R1–R7 Verified
+Next action: пользователь запускает CHECK Dev → Debug из 73_LIFECYCLE_GATES.md
 
 ## Open blockers
 - none
 
 ## Deferred prerequisites
 - Перенос полярного и меню/аварийного кода в будущие плагины — код зафиксирован в commit 41e8658; сами проекты вне скоупа цикла
-- Копия RoburPseudoCommands.log с тестовой машины — сохранить по итогам S6 (критерий smoke)
 - Синхронизация карточки PLUGIN_RoburPseudoCommands.md и README с составом 0.8.0 — до Debug → Stabilization
 - Прогон promptpack_validator.py на машине с Python — перед release route (локально интерпретатор недоступен)
 - Hardcoded «Стадия: Dev / …» в About (AliasEditorForm) — сверять/чистить перед Stable по SYSTEM_UI
+- Наблюдение: в копии лога dev.9 нет строк «annotation background scale applied» (лог скопирован сразу после рестарта) — не блокирует; при желании перезаписать копию после следующей сессии с применением кф
 
 ## Known limitations
 - Новые, удалённые или переименованные имена alias требуют перезапуска Robur (унаследовано из 0.7.0)
