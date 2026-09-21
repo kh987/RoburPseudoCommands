@@ -648,7 +648,7 @@ namespace RoburPseudoCommands
             text.AppendLine("RoburPseudoCommands");
             text.AppendLine();
             text.AppendLine("Версия: " + GetPluginVersion());
-            text.AppendLine("Стадия: Debug / 0.8.0-debug (MapsLeader background restore)");
+            text.AppendLine("Стадия: Stabilization / 0.8.0-debug (MapsLeader background restore)");
             text.AppendLine();
             text.AppendLine("DLL:");
             text.AppendLine(assembly.Location);
