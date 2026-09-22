@@ -2,7 +2,7 @@
 
 Plugin: RoburPseudoCommands
 Cycle ID: 2026-09-02-feature-v0.8.0
-Updated: 2026-09-21 18:23
+Updated: 2026-09-22 08:05
 State path: D:\Codex\RoburPseudoCommands\.promptpack\WORKFLOW_STATE.md
 
 ## Lifecycle
@@ -27,7 +27,7 @@ SYSTEM_UI.md: read — фактическое чтение, Prompt Pack SMB (с�
 SYSTEM_GEOMETRY.md: read — фактическое чтение, Prompt Pack SMB (сессии 2026-09-18/2026-09-20)
 
 ## Evidence
-Build: passed — dev.9 Release 0/0 (S5/S6); metadata 0.8.0-debug пересобрана 0/0 при APPLY; чистка Stabilization 2026-09-21 — build 0/0, Ui.Tests 49 PASS (без нового TPM/deploy)
+Build: passed — dev.9 Release 0/0 (S5/S6); metadata 0.8.0-debug пересобрана 0/0 при APPLY; чистка Stabilization 2026-09-21 — build 0/0, Ui.Tests 49 PASS; тест-кандидат dist/RoburPseudoCommands-0.8.0-debug.tpm собран 2026-09-22 — 17 entries, ProductVersion 0.8.0-debug, строка «Stabilization» в DLL, SHA-256 a632c5e4606d443fc460b14ad68a7ad54558a1ba9350f6fca65d006d232e2ffa (deploy/runtime — следующая host-сессия)
 Deploy: passed — dev.9.tpm чистая установка, DLL загружена (2026-09-20 12:23)
 Runtime: passed — smoke-матрица S6 полностью ок (пользователь, 2026-09-20, Robur Genplan 16.0.62.12); лог без exception/error
 UI: passed — offline checks=49; host: редактор/About проверены в smoke
@@ -35,8 +35,8 @@ Geometry: passed — маска мультивыноски через alias кф
 Docs: passed — карточка PLUGIN_RoburPseudoCommands.md и README.md синхронизированы с составом 0.8.0-debug (2026-09-20)
 
 ## Cursor
-Last completed action: чистка Stabilization: опечатки README исправлены («Псевдокоманды», 2 места), строка стадии в About → «Stabilization» (AliasEditorForm.cs); build Release 0/0, Ui.Tests 49 PASS; commit 2f05b43
-Next action: стабилизация 0.8.0 — подтвердить restart-free apply alias'ов в следующей host-сессии (или зафиксировать как известное ограничение); перед Stabilization → RC — 72_FINAL_AUDIT и локальный прогон promptpack_validator.py (Python 3.12.10 установлен)
+Last completed action: собран тест-кандидат Stabilization: dist/RoburPseudoCommands-0.8.0-debug.tpm (SHA-256 a632c5e4…e2ffa) на базе чистки 2f05b43; имя файла скорректировано вручную (скрипт именует по числовой package.json-версии)
+Next action: host-сессия пользователя — установить тест-кандидат 0.8.0-debug.tpm, в About сверить «Стадия: Stabilization / 0.8.0-debug» и проверить restart-free apply alias'ов; перед Stabilization → RC — 72_FINAL_AUDIT и promptpack_validator.py (scope promptpack + plugin)
 
 ## Open blockers
 - none
