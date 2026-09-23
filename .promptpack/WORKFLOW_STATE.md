@@ -2,7 +2,7 @@
 
 Plugin: RoburPseudoCommands
 Cycle ID: 2026-09-02-feature-v0.8.0
-Updated: 2026-09-22 08:05
+Updated: 2026-09-23 07:56
 State path: D:\Codex\RoburPseudoCommands\.promptpack\WORKFLOW_STATE.md
 
 ## Lifecycle
@@ -35,7 +35,7 @@ Geometry: passed — маска мультивыноски через alias кф
 Docs: passed — карточка PLUGIN_RoburPseudoCommands.md и README.md синхронизированы с составом 0.8.0-debug (2026-09-20)
 
 ## Cursor
-Last completed action: собран тест-кандидат Stabilization: dist/RoburPseudoCommands-0.8.0-debug.tpm (SHA-256 a632c5e4…e2ffa) на базе чистки 2f05b43; имя файла скорректировано вручную (скрипт именует по числовой package.json-версии)
+Last completed action: build-tpm.ps1 — TPM именуется по полному InformationalVersion DLL (+проверка консистентности base↔package.json, запрет перезаписи существующего вывода); синтаксис/логика/негативный тест проверены, кандидат a632c5e4 не тронут; commit 21d6146
 Next action: host-сессия пользователя — установить тест-кандидат 0.8.0-debug.tpm, в About сверить «Стадия: Stabilization / 0.8.0-debug» и проверить restart-free apply alias'ов; перед Stabilization → RC — 72_FINAL_AUDIT и promptpack_validator.py (scope promptpack + plugin)
 
 ## Open blockers
