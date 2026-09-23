@@ -36,13 +36,22 @@ if (-not (Test-Path -LiteralPath $dllPath)) {
     throw "Build output not found: $dllPath"
 }
 
+$dllVersionInfo = [System.Diagnostics.FileVersionInfo]::GetVersionInfo($dllPath)
+$dllVersion = ($dllVersionInfo.ProductVersion -split '\+', 2)[0]
+if ($dllVersion -notmatch '^\d+\.\d+\.\d+(-[0-9A-Za-z.-]+)?$') {
+    throw "Unexpected DLL ProductVersion '$($dllVersionInfo.ProductVersion)'; expected MAJOR.MINOR.PATCH[-pre]."
+}
+if (($dllVersion -split '-', 2)[0] -ne $version) {
+    throw "DLL ProductVersion base '$dllVersion' does not match package.json version '$version'."
+}
+
 if (-not (Test-Path -LiteralPath $distDir)) {
     New-Item -ItemType Directory -Path $distDir | Out-Null
 }
 
-$tpmPath = Join-Path $distDir "RoburPseudoCommands-$version.tpm"
+$tpmPath = Join-Path $distDir "RoburPseudoCommands-$dllVersion.tpm"
 if (Test-Path -LiteralPath $tpmPath) {
-    Remove-Item -LiteralPath $tpmPath
+    throw "Output already exists: $tpmPath. Bump the version or remove the file explicitly."
 }
 
 Add-Type -AssemblyName System.IO.Compression
