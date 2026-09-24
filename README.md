@@ -142,7 +142,7 @@ Topomatic Robur, его SDK, библиотеки и товарные знаки
 
 - Текущая версия: `v0.8.0` (package `0.8.0`).
 - Стадия: `Stable` (применена 2026-09-24).
-- Host-проверка: `0.8.0-rc.1.tpm` (SHA-256 `ff3b7390…9784`) — все ручные сценарии без ошибок в Robur Genplan 16.0.62.12; Stable-артефакт `RoburPseudoCommands-0.8.0.tpm` (SHA-256 `8714fd63…b2a8`) собран 2026-09-24, код идентичен rc.1 (отличается только версия в метаданных); контрольная установка Stable-TPM выполняется перед публикацией.
+- Host-проверка: `0.8.0-rc.1.tpm` (SHA-256 `ff3b7390…9784`) — все ручные сценарии без ошибок в Robur Genplan 16.0.62.12; Stable-артефакт `RoburPseudoCommands-0.8.0.tpm` (SHA-256 `8714fd63…b2a8`) установлен и проверен в host 2026-09-24 (код идентичен rc.1, отличается только версия в метаданных).
 - Предыдущая стабильная версия: `v0.7.0`.
 - Последний опубликованный GitHub Release: [`v0.7.0`](https://github.com/kh987/RoburPseudoCommands/releases/tag/v0.7.0).
 - Последний опубликованный GitHub Release: [`v0.7.0`](https://github.com/kh987/RoburPseudoCommands/releases/tag/v0.7.0).
