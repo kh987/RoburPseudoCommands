@@ -29,14 +29,14 @@ SYSTEM_GEOMETRY.md: read — фактическое чтение, Prompt Pack SM
 ## Evidence
 Build: passed — dev.9 Release 0/0 (S5/S6); metadata 0.8.0-debug пересобрана 0/0 при APPLY; чистка Stabilization 2026-09-21 — build 0/0, Ui.Tests 49 PASS; тест-кандидат dist/RoburPseudoCommands-0.8.0-debug.tpm собран 2026-09-22 — 17 entries, ProductVersion 0.8.0-debug, строка «Stabilization» в DLL, SHA-256 a632c5e4606d443fc460b14ad68a7ad54558a1ba9350f6fca65d006d232e2ffa; повторная локальная сборка 2026-09-23 — 0 warning / 0 error, Ui.Tests 49 PASS, TPM не перепаковывался; APPLY Stabilization → RC 2026-09-24 — метаданные 0.8.0-rc.1 (InformationalVersion + About-строка), Release-сборка 0/0, Ui.Tests 49 PASS; RC-артефакт dist/RoburPseudoCommands-0.8.0-rc.1.tpm собран и верифицирован 2026-09-24 (build-tpm.ps1) — 17 entries, package 0.8.0, ProductVersion 0.8.0-rc.1, About «RC / 0.8.0-rc.1» в DLL (строки Stabilization нет), SHA-256 ff3b73904c2a64c869f5ddaa19e18f5e33a776cbb325994c8d504ec21fb39784
 Deploy: passed — dev.9.tpm чистая установка, DLL загружена (2026-09-20 12:23)
-Runtime: passed — smoke-матрица S6 полностью ок (пользователь, 2026-09-20, Robur Genplan 16.0.62.12); лог без exception/error; установленный кандидат 0.8.0-debug.tpm — host-сессия 2026-09-23 (пользователь): установка ок, About «Стадия: Stabilization / 0.8.0-debug», restart-free apply и три адресных отказных сценария подтверждены без выявленных проблем; полный функциональный smoke этого TPM отдельно не заявлен
+Runtime: passed — smoke-матрица S6 полностью ок (пользователь, 2026-09-20, Robur Genplan 16.0.62.12); лог без exception/error; установленный кандидат 0.8.0-debug.tpm — host-сессия 2026-09-23 (пользователь): установка ок, About «Стадия: Stabilization / 0.8.0-debug», restart-free apply и три адресных отказных сценария подтверждены без выявленных проблем; rc.1 (SHA-256 ff3b7390…9784) — host-сессия 2026-09-24: пользователь установил 0.8.0-rc.1.tpm в Robur Genplan 16.0.62.12 и проверил — «всё ок», проблем не выявлено; детализация сценариев пользователем не перечислялась
 UI: passed — offline checks=49; host: редактор/About проверены в smoke; пользователь 2026-09-23 подтвердил быстрый Escape/смену фокуса при открытии popup и отказ записи settings.json на установленном 0.8.0-debug.tpm без выявленных проблем
 Geometry: passed — маска мультивыноски через alias кф: 2,0/1,05, Recreate, save/reopen (пользователь, dev.9); адресный сценарий с несколькими мультивыносками и проблемой одного объекта на установленном 0.8.0-debug.tpm проверен пользователем 2026-09-23 без выявленных проблем
-Docs: current — P2/TRACEABILITY/README/карточка синхронизированы с фактическим popup-only и точным кандидатом 0.8.0-debug (2026-09-23)
+Docs: current — P2/TRACEABILITY/README/карточка синхронизированы с фактическим popup-only, версией 0.8.0-rc.1 и её host-подтверждением (2026-09-24)
 
 ## Cursor
-Last completed action: подтверждённый APPLY Stabilization → RC (2026-09-24) и сборка RC-артефакта dist/RoburPseudoCommands-0.8.0-rc.1.tpm (build-tpm.ps1, Release; SHA-256 ff3b7390…9784; пакет верифицирован: 17 entries, package 0.8.0, ProductVersion/About = 0.8.0-rc.1)
-Next action: установить 0.8.0-rc.1.tpm в Robur Genplan 16.0.62.12 и выполнить ручной runtime-smoke на rc.1 (пользователь); после — отдельно CHECK RC → Stable
+Last completed action: пользователь установил 0.8.0-rc.1.tpm в Robur Genplan 16.0.62.12 и проверил (host-сессия 2026-09-24, «всё ок»); документация синхронизирована
+Next action: отдельно запустить CHECK RC → Stable (73_LIFECYCLE_GATES.md; в CHECK оценить объём проверенных на rc.1 сценариев — пользователь сообщил кратко «всё ок» — и актуальность всех evidence)
 
 ## Open blockers
 - none
