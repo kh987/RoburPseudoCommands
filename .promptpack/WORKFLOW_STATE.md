@@ -19,7 +19,7 @@ Test level: extended
 P2 status: approved
 Draft revision: n/a
 Draft status: n/a
-Current step: Stable v0.8.0 (RC → Stable применён 2026-09-24); Stable-артефакт не собран, публикация не выполнялась
+Current step: Stable v0.8.0 опубликована (GitHub Release 2026-09-24, опубликованный asset сверен с dist); цикл 2026-09-02-feature-v0.8.0 полностью закрыт
 Status: awaiting-user
 
 ## Profile modules
@@ -35,8 +35,8 @@ Geometry: passed — маска мультивыноски через alias кф
 Docs: current — P2/TRACEABILITY/README/карточка синхронизированы с фактическим popup-only, версией 0.8.0-rc.1 и её host-подтверждением (2026-09-24)
 
 ## Cursor
-Last completed action: контрольная установка Stable-артефакта 0.8.0.tpm (SHA-256 8714fd63…b2a8) в Robur Genplan 16.0.62.12 — установка и проверка успешны (пользователь, 2026-09-24, «всё работает»)
-Next action: release note (73_LIFECYCLE_GATES.md) и публикация GitHub Release v0.8.0 + upload TPM-asset — отдельными командами; после публикации — перепроверка скачанного asset
+Last completed action: GitHub Release v0.8.0 опубликован (https://github.com/kh987/RoburPseudoCommands/releases/tag/v0.8.0, тег v0.8.0, asset RoburPseudoCommands-0.8.0.tpm); опубликованный asset скачан и сверен — SHA-256 8714fd6343775ee5a09facf3aba9509af6ba3cc099b9f5ecdd81e9cc46ecb2a8 совпал с dist (2026-09-24)
+Next action: цикл 2026-09-02-feature-v0.8.0 полностью закрыт; новая плановая задача — отдельный запуск 22_WORKFLOW_CHANGE_REQUEST.md (открытых задач нет)
 
 ## Open blockers
 - none
